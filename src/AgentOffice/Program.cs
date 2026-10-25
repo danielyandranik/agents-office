@@ -28,6 +28,8 @@ builder.Services.AddProblemDetails();
 builder.Services.AddSingleton<OfficeStore>();
 builder.Services.AddSingleton<EventBus>();
 builder.Services.AddSingleton<RoleCatalog>();
+builder.Services.AddSingleton<SkillLibrary>();
+builder.Services.AddSingleton<OfficeBoard>();
 builder.Services.AddSingleton<ClaudeCliToolHost>();
 builder.Services.AddSingleton<ChatClientFactory>();
 builder.Services.AddSingleton<OfficeRuntime>();
@@ -85,6 +87,40 @@ api.MapGet("/roles", (RoleCatalog roles) => Results.Ok(roles.List()));
 api.MapPost("/roles", (RoleCatalog roles, RoleTemplate role) => Results.Ok(roles.Save(role)));
 api.MapDelete("/roles/{id}", (RoleCatalog roles, string id) => { roles.Delete(id); return Results.NoContent(); });
 
+// ---- office board: a kanban of the team's work; starting a card hands it to its assignee as a mission
+api.MapGet("/cards", (OfficeBoard board) => Results.Ok(board.List()));
+api.MapPost("/cards", (OfficeBoard board, CardRequest req) => Results.Ok(board.Create(req.ToChanges(), "owner")));
+api.MapPut("/cards/{id}", (OfficeBoard board, string id, CardRequest req) => Results.Ok(board.Update(id, req.ToChanges())));
+api.MapPost("/cards/{id}/move", (OfficeBoard board, string id, MoveCardRequest req) => Results.Ok(board.Move(id, req.Status, req.BeforeId)));
+api.MapDelete("/cards/{id}", (OfficeBoard board, string id) => { board.Delete(id); return Results.NoContent(); });
+api.MapPost("/cards/{id}/start", (OfficeBoard board, OfficeRuntime runtime, string id, StartCardRequest req) =>
+{
+    var card = board.Find(id) ?? throw new OfficeException(404, "No such card.");
+    if (card.MissionId is not null && runtime.IsRunning(card.MissionId)) throw new OfficeException(409, "Work on this card is already under way.");
+    var lead = req.LeadId ?? card.Assignee ?? throw new OfficeException(400, "Assign the card to someone first.");
+    var goal = $"{card.Title}\n\n{card.Description}".Trim()
+        + $"\n\n(Office board card #{card.Number}. When you're done, say what's ready for the owner to review.)";
+    var mission = runtime.StartMission(new MissionRequest(card.Title, goal, MissionModes.Delegate, lead, [lead], req.Workspace, null));
+    board.Started(card.Id, mission.Id);
+    // A very quick mission may already be over before the card was linked to it.
+    if (runtime.Store.FindMission(mission.Id) is { Status: not (MissionStatus.Running or MissionStatus.Idle) } ended)
+        board.MissionEnded(ended.Id, ended.Status, ended.Error);
+    return Results.Ok(new { card = board.Find(card.Id), mission });
+});
+
+// ---- skills: Agent Skills (SKILL.md) that roles and colleagues can have
+api.MapGet("/skills", (SkillLibrary skills) => Results.Ok(skills.List()));
+api.MapPost("/skills", (SkillLibrary skills, SkillRequest req) => Results.Ok(skills.Save(req.Name, req.Description, req.Instructions, mustBeNew: true)));
+api.MapPut("/skills/{name}", (SkillLibrary skills, string name, SkillRequest req) =>
+{
+    var existing = skills.List().FirstOrDefault(s => s.Name == name);
+    if (existing is null) return Results.NotFound(new { error = "No such skill." });
+    if (existing.ReadOnly) return Results.BadRequest(new { error = $"{name} comes from {existing.Source}; edit it there, or import a copy." });
+    return Results.Ok(skills.Save(name, req.Description, req.Instructions, mustBeNew: false));
+});
+api.MapDelete("/skills/{name}", (SkillLibrary skills, string name) => { skills.Delete(name); return Results.NoContent(); });
+api.MapPost("/skills/import", (SkillLibrary skills, ImportRequest req) => Results.Ok(skills.Import(req.Text)));
+
 // ---- colleagues
 api.MapPost("/agents", (OfficeRuntime runtime, AgentProfile candidate) => Results.Ok(runtime.Hire(candidate)));
 api.MapPut("/agents/{id}", (OfficeRuntime runtime, string id, AgentProfile changes) => Results.Ok(runtime.Update(id, changes)));
@@ -123,3 +159,14 @@ static object Effective(ChatClientFactory clients, AgentProfile a)
 
 public sealed record MessageRequest(string? Text);
 public sealed record RenameRequest(string? Name);
+public sealed record SkillRequest(string? Name, string? Description, string? Instructions);
+public sealed record ImportRequest(string? Text);
+public sealed record MoveCardRequest(string? Status, string? BeforeId);
+public sealed record StartCardRequest(string? LeadId, string? Workspace);
+
+/// <summary>A whole card from the UI: missing assignee or points mean "none".</summary>
+public sealed record CardRequest(string? Title, string? Description, string? Status, string? Assignee, string? Priority, int? Points, bool? Blocked, string? BlockedReason)
+{
+    public CardChanges ToChanges() => new(Title ?? "", Description ?? "", Status, Assignee, Priority, Points, Blocked ?? false, BlockedReason,
+        ClearAssignee: string.IsNullOrWhiteSpace(Assignee), ClearPoints: Points is null);
+}

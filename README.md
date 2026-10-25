@@ -103,7 +103,27 @@ lounge. When a colleague has nothing to do, they go on a break by themselves:
 Work always comes first: when they're asked to do something, they head straight back to their desk.
 Breaks are purely visual. They run in the browser and cost no tokens.
 
-**The board.** Every mission has a board, which shows on the office whiteboard as sticky notes.
+**Skills.** Roles and colleagues can have skills: reusable playbooks in the
+[Agent Skills](https://agentskills.io) format, a folder with a `SKILL.md` (frontmatter `name` and `description`,
+then Markdown instructions) and any files it needs. Attach them under **Skills** in the hire form or a
+colleague's profile; a colleague hired from a role starts with the role's skills. **Manage skills** lets you
+write, edit and delete skills, or import a `SKILL.md`. They're stored in `office-data/skills/`.
+Folders in `Office:SkillDirs` (default `~/.claude/skills`) show up read-only, so your Claude Code skills
+work here too.
+
+A colleague's instructions list only each skill's name and description. When the work calls for one, they
+load it with `use_skill` and read its bundled files with `read_skill_file`, so unused skills cost almost nothing.
+
+**The office board.** **Board** in the top bar opens a kanban of the team's work: Backlog, To do,
+In progress, Review and Done. Cards have a number (#12), priority, story points, an assignee and a
+blocked flag; drag them between columns or open one to edit it. **Start work** hands a card to its
+assignee as a mission: the card moves to In progress and shows the mission's task progress, goes to
+Review when the mission finishes (you move it to Done), and is flagged blocked if the mission fails.
+Colleagues with **Plan on the board** (on for the Project and Product Manager roles) can list, add,
+assign, estimate and flag cards with `office_board_list`, `office_board_add` and `office_board_update`;
+only you move cards to Done.
+
+**The mission board.** Every mission has a board, which shows on the office whiteboard as sticky notes.
 Agents manage it with `board_add`, `board_update` and `board_list`.
 
 ### Abilities per colleague
@@ -153,6 +173,7 @@ src/AgentOffice/
   wwwroot/                   the office UI (vanilla JS, no build step)
     demo.js                  in-browser stand-in for the server (?demo or no API)
 tools/sync-demo.mjs          copies roles.json into demo.js; --bundle makes a single-file preview
+tools/textures.py            regenerates the floor's material textures (brick, wood, concrete) in styles.css
 ```
 
 State lives in `src/AgentOffice/office-data/`: `office.json` and one event log per mission. Delete
@@ -174,11 +195,22 @@ the folder to start fresh.
 | GET    | `/api/roles`, `/api/providers`| Hire-dialog data (built-in roles merged with yours)  |
 | POST   | `/api/roles`                  | Add a role, or update yours with that title: `{ title, summary, persona, can, look: { shirt, accessory } }` |
 | DELETE | `/api/roles/{id}`             | Delete one of your roles (a replaced built-in comes back) |
+| GET    | `/api/cards`                  | Office board cards                                   |
+| POST   | `/api/cards`                  | New card: `{ title, description, status, assignee, priority, points, blocked, blockedReason }` |
+| PUT    | `/api/cards/{id}`             | Replace a card's fields (same body)                  |
+| POST   | `/api/cards/{id}/move`        | Move to a column / position: `{ status, beforeId }`  |
+| POST   | `/api/cards/{id}/start`       | Hand the card to its assignee as a mission           |
+| DELETE | `/api/cards/{id}`             | Delete a card                                        |
+| GET    | `/api/skills`                 | Skill library: office skills plus read-only ones from `Office:SkillDirs` |
+| POST   | `/api/skills`                 | New skill: `{ name, description, instructions }` |
+| PUT    | `/api/skills/{name}`          | Edit an office skill's description and instructions |
+| POST   | `/api/skills/import`          | Import a SKILL.md: `{ text }` (replaces an office skill with that name) |
+| DELETE | `/api/skills/{name}`          | Delete an office skill and detach it from colleagues and roles |
 
 SignalR hub `/hub` pushes `event` messages `{ seq, ts, kind, missionId, agentId, data }`. Kinds
 include `agent.status`, `agent.delta`, `agent.said`, `agent.tool`, `agent.tool_result`,
 `agent.visit`, `agent.return`, `board.updated`, `workspace.file`, `mission.*`, `meeting.*` and
-`office.*` and `roles.updated`.
+`office.*`, `roles.updated`, `skills.updated` and `cards.updated`.
 
 ## Where to take it next
 

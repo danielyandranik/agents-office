@@ -50,6 +50,11 @@ public sealed partial class SimulatedChatClient : IChatClient
             {
                 call = Call("board_add", new() { ["title"] = Shorten(topic, 50), ["assignee"] = me });
             }
+            else if (!usedTools.Contains("use_skill") && tools.TryGetValue("use_skill", out var useSkill)
+                     && SkillsRegex().Match(useSkill.Description) is { Success: true } sm)
+            {
+                call = Call("use_skill", new() { ["name"] = sm.Groups[1].Value.Split(',')[0].Trim() });
+            }
             else if (!fromColleague && !usedTools.Contains("ask_colleague") && tools.TryGetValue("ask_colleague", out var ask)
                      && ColleaguesRegex().Match(ask.Description) is { Success: true } cm)
             {
@@ -121,6 +126,9 @@ public sealed partial class SimulatedChatClient : IChatClient
 
     [GeneratedRegex(@"You are ([^,\n]+),")]
     private static partial Regex NameRegex();
+
+    [GeneratedRegex(@"Skills: ([^.\n]+)")]
+    private static partial Regex SkillsRegex();
 
     [GeneratedRegex(@"Colleagues: ([^.\n]+)")]
     private static partial Regex ColleaguesRegex();

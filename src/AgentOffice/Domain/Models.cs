@@ -17,6 +17,9 @@ public sealed class AgentProfile
     public Appearance Look { get; set; } = new();
     public Capabilities Can { get; set; } = new();
 
+    /// <summary>Names of skills from the office's skill library this colleague can load when the work calls for it.</summary>
+    public List<string> Skills { get; set; } = [];
+
     /// <summary>Desk slot on the floor plan (0-based).</summary>
     public int Desk { get; set; }
     public DateTimeOffset HiredAt { get; set; } = DateTimeOffset.UtcNow;
@@ -41,6 +44,8 @@ public sealed class Capabilities
     public bool Web { get; set; }
     /// <summary>Ask colleagues for help.</summary>
     public bool Delegate { get; set; } = true;
+    /// <summary>See and plan the office board: add cards, move them, assign them.</summary>
+    public bool Plan { get; set; }
 }
 
 public static class MissionModes
@@ -96,6 +101,50 @@ public sealed class OfficeState
     public List<Mission> Missions { get; set; } = [];
     /// <summary>Role templates the owner added. One with a built-in's title replaces that built-in.</summary>
     public List<RoleTemplate> Roles { get; set; } = [];
+    /// <summary>The office board: work items across all missions.</summary>
+    public List<BoardCard> Cards { get; set; } = [];
+    public int NextCardNumber { get; set; } = 1;
+}
+
+public static class CardStatus
+{
+    public const string Backlog = "backlog";
+    public const string Todo = "todo";
+    public const string Doing = "doing";
+    public const string Review = "review";
+    public const string Done = "done";
+    public static readonly string[] All = [Backlog, Todo, Doing, Review, Done];
+}
+
+public static class CardPriority
+{
+    public static readonly string[] All = ["low", "normal", "high", "urgent"];
+}
+
+/// <summary>A card on the office board. Starting work on it hands it to its assignee as a mission.</summary>
+public sealed class BoardCard
+{
+    public string Id { get; set; } = Ids.New("cd");
+    /// <summary>Short number people (and colleagues) use to refer to it: #12.</summary>
+    public int Number { get; set; }
+    public string Title { get; set; } = "";
+    public string Description { get; set; } = "";
+    public string Status { get; set; } = CardStatus.Backlog;
+    /// <summary>Position within its column; lower comes first.</summary>
+    public double Order { get; set; }
+    /// <summary>Colleague id, or null when unassigned.</summary>
+    public string? Assignee { get; set; }
+    public string Priority { get; set; } = "normal";
+    /// <summary>Story points, or null when not estimated.</summary>
+    public int? Points { get; set; }
+    public bool Blocked { get; set; }
+    public string? BlockedReason { get; set; }
+    /// <summary>The mission doing this card's work, once started.</summary>
+    public string? MissionId { get; set; }
+    /// <summary>"owner", or the name of the colleague who added it.</summary>
+    public string CreatedBy { get; set; } = "owner";
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
 }
 
 /// <summary>A starting point for the hire dialog: fills in the form, which can then be changed.</summary>
@@ -108,6 +157,8 @@ public sealed class RoleTemplate
     public string Persona { get; set; } = "";
     public Capabilities Can { get; set; } = new();
     public RoleLook Look { get; set; } = new();
+    /// <summary>Skills a colleague hired into this role starts with.</summary>
+    public List<string> Skills { get; set; } = [];
 }
 
 /// <summary>The part of a look that goes with the role; skin and hair stay the person's own.</summary>

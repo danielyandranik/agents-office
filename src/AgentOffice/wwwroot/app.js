@@ -40,17 +40,35 @@
   });
 
   // ================================================================ paper-cut person
+  // Shared light: overlays filled with these gradients give every shape the same top-left light source.
+  const LIGHT_DEFS = `<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+    <linearGradient id="lightBody" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".2"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".3"/></linearGradient>
+    <linearGradient id="lightLimb" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".14"/><stop offset=".32" stop-color="#fff" stop-opacity=".16"/><stop offset="1" stop-color="#000" stop-opacity=".32"/></linearGradient>
+    <radialGradient id="lightHead" cx=".36" cy=".3" r=".78"><stop offset="0" stop-color="#fff" stop-opacity=".24"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".26"/></radialGradient>
+    <linearGradient id="lightHair" x1="0" y1="0" x2=".7" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".35" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".3"/></linearGradient>
+    <linearGradient id="lightLeaf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".28"/></linearGradient>
+  </defs></svg>`;
+  document.body.insertAdjacentHTML('afterbegin', LIGHT_DEFS);
+
+  /** The same shapes again, filled with a light overlay instead of their colour. */
+  const lit = (shapes, color, light) => shapes.replaceAll(`fill="${color}"`, `fill="url(#${light})"`);
+
   /** crop: 'full' (walking body), 'bust' (portrait), 'head' (tiny chips); face: 'front' or 'back' (seen from behind). */
   function avatar(look = {}, crop = 'full', face = 'front') {
     const L = { skin: '#C68B59', hair: '#2B2118', hairStyle: 'short', shirt: '#3E7CB1', accessory: 'none', ...look };
     const vb = crop === 'head' ? '12 6 40 40' : crop === 'bust' ? '4 2 56 98' : '0 0 64 112';
     const sleeve = shade(L.shirt, -0.08);
+    const shoe = (cx) => `<ellipse cx="${cx}" cy="107" rx="6.5" ry="3" fill="#22262D"/><ellipse cx="${cx - 1.5}" cy="105.8" rx="3" ry="1" fill="#fff" opacity=".18"/>`;
     const legs = `<g class="legs">
-        <g class="leg-l"><rect x="20" y="82" width="10" height="24" rx="4" fill="#3D4451"/><ellipse cx="25" cy="107" rx="6.5" ry="3" fill="#22262D"/></g>
-        <g class="leg-r"><rect x="34" y="82" width="10" height="24" rx="4" fill="#3D4451"/><ellipse cx="39" cy="107" rx="6.5" ry="3" fill="#22262D"/></g>
+        <g class="leg-l"><rect x="20" y="82" width="10" height="24" rx="4" fill="#3D4451"/><rect x="20" y="82" width="10" height="24" rx="4" fill="url(#lightLimb)"/>${shoe(25)}</g>
+        <g class="leg-r"><rect x="34" y="82" width="10" height="24" rx="4" fill="#3D4451"/><rect x="34" y="82" width="10" height="24" rx="4" fill="url(#lightLimb)"/>${shoe(39)}</g>
       </g>`;
-    const arms = `<g class="arm-l"><rect x="6.5" y="51" width="9.5" height="27" rx="4.75" fill="${sleeve}"/><circle cx="11.25" cy="78" r="4.2" fill="${L.skin}"/></g>
-      <g class="arm-r"><rect x="48" y="51" width="9.5" height="27" rx="4.75" fill="${sleeve}"/><circle cx="52.75" cy="78" r="4.2" fill="${L.skin}"/></g>`;
+    const arm = (x, cx) => `<rect x="${x}" y="51" width="9.5" height="27" rx="4.75" fill="${sleeve}"/><rect x="${x}" y="51" width="9.5" height="27" rx="4.75" fill="url(#lightLimb)"/>
+      <circle cx="${cx}" cy="78" r="4.2" fill="${L.skin}"/><circle cx="${cx}" cy="78" r="4.2" fill="url(#lightHead)"/>`;
+    const arms = `<g class="arm-l">${arm(6.5, 11.25)}</g><g class="arm-r">${arm(48, 52.75)}</g>`;
+    const torso = (fill) => `<path d="M11 86 V62 Q11 45.5 32 45.5 Q53 45.5 53 62 V86 Z" fill="${fill}"/><path d="M11 86 V62 Q11 45.5 32 45.5 Q53 45.5 53 62 V86 Z" fill="url(#lightBody)"/>`;
+    const ears = `<circle cx="16.8" cy="28" r="3" fill="${shade(L.skin, -0.05)}"/><circle cx="47.2" cy="28" r="3" fill="${shade(L.skin, -0.05)}"/>`;
+    const head = `<circle cx="32" cy="26" r="15" fill="${L.skin}"/><circle cx="32" cy="26" r="15" fill="url(#lightHead)"/>`;
 
     if (face === 'back') {
       const curls = [[20, 16], [26, 11], [32, 10], [38, 11], [44, 16], [18, 24], [25, 20], [32, 19], [39, 20], [46, 24], [20, 31], [27, 29], [32, 31], [37, 29], [44, 31], [32, 37]];
@@ -63,16 +81,15 @@
       }[L.hairStyle] || '';
       const acc = {
         headphones: `<path d="M15 27 Q15 6 32 6 Q49 6 49 27" fill="none" stroke="#1D2836" stroke-width="3"/><rect x="11.5" y="23" width="7" height="11" rx="3" fill="#1D2836"/><rect x="45.5" y="23" width="7" height="11" rx="3" fill="#1D2836"/>`,
-        cap: `<path d="M16 23 Q16 7 32 7 Q48 7 48 23 Z" fill="${shade(L.shirt, -0.15)}"/><rect x="26" y="20" width="12" height="4" rx="1.5" fill="${shade(L.shirt, -0.32)}"/>`,
+        cap: `<path d="M16 23 Q16 7 32 7 Q48 7 48 23 Z" fill="${shade(L.shirt, -0.15)}"/><path d="M16 23 Q16 7 32 7 Q48 7 48 23 Z" fill="url(#lightHair)"/><rect x="26" y="20" width="12" height="4" rx="1.5" fill="${shade(L.shirt, -0.32)}"/>`,
       }[L.accessory] || '';
       return `<svg class="av" viewBox="${vb}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${legs}
         <rect x="27" y="36" width="10" height="12" rx="3" fill="${shade(L.skin, -0.1)}"/>
-        <path d="M11 86 V62 Q11 45.5 32 45.5 Q53 45.5 53 62 V86 Z" fill="${shade(L.shirt, -0.05)}"/>
+        ${torso(shade(L.shirt, -0.05))}
         <path d="M25 47.5 Q32 50.5 39 47.5" fill="none" stroke="${shade(L.shirt, -0.22)}" stroke-width="1.6"/>
-        ${arms}
-        <circle cx="16.8" cy="28" r="3" fill="${shade(L.skin, -0.05)}"/><circle cx="47.2" cy="28" r="3" fill="${shade(L.skin, -0.05)}"/>
-        <circle cx="32" cy="26" r="15" fill="${L.skin}"/>
-        ${cover}${acc}
+        <path d="M32 50 V84" stroke="${shade(L.shirt, -0.2)}" stroke-width=".8" opacity=".5"/>
+        ${arms}${ears}${head}
+        ${cover}${lit(cover, L.hair, 'lightHair')}${acc}
       </svg>`;
     }
 
@@ -88,22 +105,28 @@
       bald: '',
     }[L.hairStyle] || '';
     const acc = {
-      glasses: `<g fill="none" stroke="#1D2836" stroke-width="1.6"><circle cx="26.5" cy="27" r="4.4"/><circle cx="37.5" cy="27" r="4.4"/><path d="M30.9 27 h2.2"/></g>`,
-      headphones: `<path d="M15 27 Q15 6 32 6 Q49 6 49 27" fill="none" stroke="#1D2836" stroke-width="3"/><rect x="11.5" y="23" width="7" height="11" rx="3" fill="#1D2836"/><rect x="45.5" y="23" width="7" height="11" rx="3" fill="#1D2836"/>`,
-      cap: `<path d="M16 22 Q16 7 32 7 Q48 7 48 22 Z" fill="${shade(L.shirt, -0.15)}"/><path d="M30 21 h22 q2 0 2 2 v0 q0 2 -2 2 h-22 z" fill="${shade(L.shirt, -0.25)}"/>`,
+      glasses: `<g fill="none" stroke="#1D2836" stroke-width="1.5"><circle cx="26.5" cy="27" r="4.4"/><circle cx="37.5" cy="27" r="4.4"/><path d="M30.9 27 h2.2 M22.1 26.5 l-4.6 -1 M41.9 26.5 l4.6 -1"/></g>
+        <path d="M24 24.5 l3 -1.5 M35 24.5 l3 -1.5" stroke="#fff" stroke-width="1" opacity=".55" stroke-linecap="round"/>`,
+      headphones: `<path d="M15 27 Q15 6 32 6 Q49 6 49 27" fill="none" stroke="#1D2836" stroke-width="3"/><rect x="11.5" y="23" width="7" height="11" rx="3" fill="#1D2836"/><rect x="45.5" y="23" width="7" height="11" rx="3" fill="#1D2836"/>
+        <rect x="12.5" y="24" width="2" height="6" rx="1" fill="#fff" opacity=".18"/>`,
+      cap: `<path d="M16 22 Q16 7 32 7 Q48 7 48 22 Z" fill="${shade(L.shirt, -0.15)}"/><path d="M16 22 Q16 7 32 7 Q48 7 48 22 Z" fill="url(#lightHair)"/><path d="M30 21 h22 q2 0 2 2 v0 q0 2 -2 2 h-22 z" fill="${shade(L.shirt, -0.25)}"/>`,
     }[L.accessory] || '';
+    const brow = shade(L.hair === '#E8E4DA' ? '#9AA0A6' : L.hair, -0.1);
     return `<svg class="av" viewBox="${vb}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       ${legs}
-      ${hairBack}
+      ${hairBack}${lit(hairBack, L.hair, 'lightHair')}
       <rect x="27" y="37" width="10" height="11" rx="3" fill="${shade(L.skin, -0.06)}"/>
-      <path d="M11 86 V62 Q11 45.5 32 45.5 Q53 45.5 53 62 V86 Z" fill="${L.shirt}"/>
+      ${torso(L.shirt)}
       <path d="M26 46 L32 53 L38 46" fill="none" stroke="${shade(L.shirt, -0.18)}" stroke-width="1.6"/>
-      ${arms}
-      <circle cx="32" cy="26" r="15" fill="${L.skin}"/>
-      <circle cx="22.5" cy="31.5" r="2.6" fill="#E88B7A" opacity=".35"/><circle cx="41.5" cy="31.5" r="2.6" fill="#E88B7A" opacity=".35"/>
-      <g class="eyes"><circle cx="26.5" cy="27" r="1.9" fill="#1D2836"/><circle cx="37.5" cy="27" r="1.9" fill="#1D2836"/></g>
-      <path d="M28.5 33.5 Q32 36 35.5 33.5" fill="none" stroke="#1D2836" stroke-width="1.5" stroke-linecap="round"/>
-      ${hairFront}${acc}
+      <ellipse cx="32" cy="46.5" rx="6.5" ry="2.2" fill="#000" opacity=".14"/>
+      ${arms}${ears}${head}
+      <circle cx="22.5" cy="31.5" r="2.6" fill="#E88B7A" opacity=".28"/><circle cx="41.5" cy="31.5" r="2.6" fill="#E88B7A" opacity=".28"/>
+      <path d="M23.6 23.2 Q26.5 21.8 29.2 23 M34.8 23 Q37.5 21.8 40.4 23.2" fill="none" stroke="${brow}" stroke-width="1.3" stroke-linecap="round" opacity=".85"/>
+      <g class="eyes"><ellipse cx="26.5" cy="27" rx="1.7" ry="2" fill="#1D2836"/><ellipse cx="37.5" cy="27" rx="1.7" ry="2" fill="#1D2836"/>
+        <circle cx="27.1" cy="26.3" r=".55" fill="#fff"/><circle cx="38.1" cy="26.3" r=".55" fill="#fff"/></g>
+      <path d="M32.3 28.6 Q31 31.4 32.9 31.8" fill="none" stroke="${shade(L.skin, -0.28)}" stroke-width="1" stroke-linecap="round" opacity=".7"/>
+      <path d="M28.8 34 Q32 36.2 35.2 34" fill="none" stroke="${shade(L.skin, -0.45)}" stroke-width="1.4" stroke-linecap="round"/>
+      ${hairFront}${lit(hairFront, L.hair, 'lightHair')}${acc}
     </svg>`;
   }
 
@@ -120,13 +143,17 @@
   function plantSvg(kind) {
     if (kind === 'monstera') {
       const leaves = [[-34, 30, -40], [32, 26, 35], [-14, 6, -10], [16, 2, 14], [0, 34, 0], [-28, 52, -60], [30, 54, 60]];
-      return `<svg viewBox="-60 -10 120 130">${leaves.map(([x, y]) => `<path d="M0 84 Q${x * 0.4} ${(y + 84) / 2} ${x} ${y}" stroke="#3B6C44" stroke-width="2.4" fill="none"/>`).join('')}${leaves.map(([x, y, r]) => `<g transform="translate(${x} ${y}) rotate(${r})"><path d="M0 0 C-18 -8 -20 -34 0 -44 C20 -34 18 -8 0 0 Z" fill="#3F7D4B"/><path d="M0 -2 V-40 M0 -14 L-10 -22 M0 -26 L9 -32 M0 -18 L10 -12" stroke="#2C5C36" stroke-width="2" fill="none"/></g>`).join('')}
-        <path d="M-26 86 h52 l-6 32 h-40 z" fill="#C9C4BB"/><rect x="-28" y="80" width="56" height="10" rx="3" fill="#B7B1A6"/></svg>`;
+      const leaf = 'M0 0 C-18 -8 -20 -34 0 -44 C20 -34 18 -8 0 0 Z';
+      return `<svg viewBox="-60 -10 120 130"><ellipse cx="0" cy="118" rx="34" ry="5" fill="#000" opacity=".22"/>${leaves.map(([x, y]) => `<path d="M0 84 Q${x * 0.4} ${(y + 84) / 2} ${x} ${y}" stroke="#3B6C44" stroke-width="2.4" fill="none"/>`).join('')}${leaves.map(([x, y, r], i) => `<g transform="translate(${x} ${y}) rotate(${r})"><path d="${leaf}" fill="${i % 2 ? '#3F7D4B' : '#468955'}"/><path d="${leaf}" fill="url(#lightLeaf)"/><path d="M0 -2 V-40 M0 -14 L-10 -22 M0 -26 L9 -32 M0 -18 L10 -12" stroke="#2C5C36" stroke-width="1.6" fill="none"/></g>`).join('')}
+        <path d="M-26 86 h52 l-6 32 h-40 z" fill="#C9C4BB"/><path d="M-26 86 h52 l-6 32 h-40 z" fill="url(#lightLimb)"/><rect x="-28" y="80" width="56" height="10" rx="3" fill="#B7B1A6"/><rect x="-28" y="80" width="56" height="3" rx="1.5" fill="#fff" opacity=".25"/></svg>`;
     }
     // fiddle-leaf fig
     const leaves = [[0, -6], [-14, 10], [14, 14], [-10, 30], [12, 36], [-16, 52], [10, 58], [0, 22]];
-    return `<svg viewBox="-40 -20 80 160"><path d="M0 120 V10" stroke="#6B4A2E" stroke-width="3"/>${leaves.map(([x, y], i) => `<ellipse cx="${x}" cy="${y}" rx="11" ry="15" transform="rotate(${i % 2 ? 30 : -30} ${x} ${y})" fill="${i % 3 ? '#4E8A55' : '#3E7547'}"/>`).join('')}
-      <path d="M-20 110 h40 l-5 30 h-30 z" fill="#2F3337"/></svg>`;
+    return `<svg viewBox="-40 -20 80 160"><ellipse cx="0" cy="139" rx="22" ry="4" fill="#000" opacity=".22"/><path d="M0 120 V10" stroke="#6B4A2E" stroke-width="3"/>${leaves.map(([x, y], i) => {
+      const t = `transform="rotate(${i % 2 ? 30 : -30} ${x} ${y})"`;
+      return `<ellipse cx="${x}" cy="${y}" rx="11" ry="15" ${t} fill="${i % 3 ? '#4E8A55' : '#3E7547'}"/><ellipse cx="${x}" cy="${y}" rx="11" ry="15" ${t} fill="url(#lightLeaf)"/><path d="M${x} ${y - 13} V${y + 13}" ${t} stroke="#2F5E37" stroke-width=".9" opacity=".7"/>`;
+    }).join('')}
+      <path d="M-20 110 h40 l-5 30 h-30 z" fill="#2F3337"/><path d="M-20 110 h40 l-5 30 h-30 z" fill="url(#lightLimb)"/></svg>`;
   }
 
   function skylineSvg(i) {
@@ -138,6 +165,26 @@
     const tower = i === 1 ? `<g class="bld"><rect x="52" y="10" width="14" height="12" rx="2"/><path d="M50 10 L59 2 L68 10 Z"/><rect x="54" y="22" width="2" height="8"/><rect x="62" y="22" width="2" height="8"/></g>` : '';
     return `<svg viewBox="0 0 112 82" preserveAspectRatio="none" aria-hidden="true">${tower}${blds.map(([x, y, w, h]) => `<rect class="bld" x="${x}" y="${y}" width="${w}" height="${h}"/>`).join('')}${lit.join('')}</svg>`;
   }
+
+  // Code on a busy monitor: two identical screens stacked, so scrolling by half loops seamlessly.
+  const CODE_SVG = (() => {
+    const colors = ['#C792EA', '#82AAFF', '#C3E88D', '#E6E9EE', '#F78C6C', '#89DDFF', '#676E95'];
+    const lines = [[0, 3, 10, 1, 8], [4, 2, 14, 3, 6], [4, 4, 9], [8, 5, 12, 2, 10], [8, 3, 7, 6, 13], [4, 1, 5], [0, 6, 18], [0, 0, 8, 1, 12], [4, 2, 16]];
+    let y = 2, out = '';
+    for (let pass = 0; pass < 2; pass++, y = 38) {
+      for (const [indent, ...segs] of lines) {
+        out += `<rect x="1" y="${y}" width="3" height="2.4" fill="#4B5263"/>`;
+        let x = 7 + indent;
+        for (let k = 0; k + 1 < segs.length || k === 0; k += 2) {
+          const c = colors[segs[k] % colors.length], w = segs[k + 1] ?? 6;
+          out += `<rect x="${x}" y="${y}" width="${w}" height="2.4" rx=".6" fill="${c}"/>`;
+          x += w + 2;
+        }
+        y += 4;
+      }
+    }
+    return `<svg class="code" viewBox="0 0 58 72" aria-hidden="true">${out}</svg>`;
+  })();
 
   // ================================================================ loft geometry
   const W = 1240, WALL_H = 132;
@@ -223,6 +270,10 @@
     tab: 'activity',
     providers: [],
     roles: [],
+    skills: [],
+    cards: [],
+    boardOpen: false,
+    boardFilter: '',          // '' everyone, '-' unassigned, or a colleague id
     demo: false,
     consoleCollapsed: false,
   };
@@ -239,7 +290,9 @@
     if (backend.onReconnect) backend.onReconnect(loadSnapshot);
     await loadSnapshot();
     setInterval(breakTick, 1000);
-    const [prov, roles] = await Promise.all([backend.get('api/providers').catch(() => null), backend.get('api/roles').catch(() => [])]);
+    const [prov, roles, skills] = await Promise.all([backend.get('api/providers').catch(() => null), backend.get('api/roles').catch(() => []), backend.get('api/skills').catch(() => [])]);
+    S.skills = skills || [];
+    S.cards = (await backend.get('api/cards').catch(() => [])) || [];
     S.providers = prov?.providers || [];
     S.roles = roles || [];
   }
@@ -329,13 +382,19 @@
         break;
       case 'office.hired':
         S.agents.set(d.id, { profile: d, presence: { status: 'idle' }, effective: null });
-        renderStage(); enterPerson(d.id); updateHeadcount();
+        renderStage(); enterPerson(d.id); updateHeadcount(); renderKanban();
         break;
       case 'office.updated':
-        if (a) { a.profile = d; renderStage(); refreshPerson(d.id); if (S.selected === d.id && S.tab !== 'profile') renderDrawer(); }
+        if (a) { a.profile = d; renderStage(); refreshPerson(d.id); if (S.selected === d.id && S.tab !== 'profile') renderDrawer(); renderKanban(); }
         break;
       case 'office.fired':
-        leavePerson(e.agentId);
+        leavePerson(e.agentId); renderKanban();
+        break;
+      case 'cards.updated':
+        S.cards = d.cards || []; renderKanban();
+        break;
+      case 'skills.updated':
+        S.skills = d.skills || []; refreshSkillPicks(); if ($('#dlgSkills').open) renderSkillList();
         break;
       case 'roles.updated':
         S.roles = d.roles || []; refreshTemplates();
@@ -355,11 +414,13 @@
         }
         renderWhiteboard(); renderConsole(); updateRunningCount();
         if (S.drawer === 'missions') renderDrawer();
+        if (S.cards.some((c) => c.missionId === d.id)) renderKanban();
         break;
       }
       case 'board.updated': {
         const m = S.missions.get(e.missionId);
         if (m) { m.board = d.tasks; if (S.focus === e.missionId) renderWhiteboard(); }
+        if (S.cards.some((c) => c.missionId === e.missionId)) renderKanban();
         break;
       }
     }
@@ -445,6 +506,9 @@
       <div class="window" style="left:596px">${skylineSvg(0)}</div>
       <div class="window" style="left:740px">${skylineSvg(1)}</div>
       <div class="shaft" style="left:540px"></div><div class="shaft" style="left:684px"></div>
+      <div class="sunpatch" style="left:478px"></div><div class="sunpatch" style="left:622px"></div>
+      <div class="ao-wall"></div>
+      <div class="ambient" style="height:${H}px"></div>
       <div class="ghost-sign" id="ghostSign"><span>${esc(S.name)}</span></div>
       <div class="door-way" style="top:${H - 170}px"></div>
       <div class="barn-door" style="top:${H - 292}px"></div>
@@ -502,8 +566,8 @@
     return `<div class="pool" style="left:${x + 85 - 150}px;top:${y - 70}px"></div>
       <div class="chair" style="left:${x + 62}px;top:${y - 46}px;z-index:${y + 30}"></div>
       <div class="desk ${a ? '' : 'vacant'} ${busy ? 'busy' : ''}" data-desk="${i}" ${a ? `data-agent="${a.profile.id}"` : ''} style="left:${x}px;top:${y}px;z-index:${y + 74}">
-        <div class="top"><i class="monitor"><b></b></i><i class="kbd"></i><i class="item item-${i % 4}"></i></div><div class="front"></div>
-        ${a ? `<button class="nameplate" data-agent="${a.profile.id}" title="${esc(a.profile.title)}"><i class="dot ${esc(st)}"></i><span>${esc(a.profile.name)}</span></button>` : ''}
+        <div class="top"><i class="monitor"><b>${CODE_SVG}</b></i><i class="kbd"></i><i class="mouse"></i><i class="item item-${i % 4}"></i></div><div class="front"></div>
+        ${a ? `<button class="nameplate" data-agent="${a.profile.id}" title="${esc(a.profile.name)}${a.profile.title ? ` — ${esc(a.profile.title)}` : ''}"><i class="dot ${esc(st)}"></i><span class="np-name">${esc(a.profile.name)}</span>${a.profile.title ? `<span class="np-role">${esc(a.profile.title)}</span>` : ''}</button>` : ''}
       </div>`;
   }
 
@@ -552,15 +616,70 @@
     el.style.fontSize = (n <= 10 ? 46 : n <= 16 ? 38 : n <= 26 ? 30 : 22) + 'px';
   }
 
+  // ================================================================ zoom
+  // 'width' fills the floor's width (the default), 'all' fits the whole office, a number is the viewer's own zoom.
+  const ZOOM_MIN = 0.3, ZOOM_MAX = 2;
+  const ZOOM_STEPS = [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.15, 1.3, 1.5, 1.75, 2];
+  const clampZoom = (z) => Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, z));
+  let zoomMode = (() => {
+    try {
+      const saved = localStorage.getItem('office.zoom');
+      return saved === 'all' || saved === 'width' ? saved : +saved > 0 ? clampZoom(+saved) : 'width';
+    } catch { return 'width'; }
+  })();
+  let scaleNow = 1;
+
+  function stageScale() {
+    const wrap = $('#floorWrap');
+    const byWidth = (wrap.clientWidth - 2) / W;
+    if (zoomMode === 'all') return clampZoom(Math.min(byWidth, (wrap.clientHeight - 2) / stageHeight()));
+    if (zoomMode === 'width') return Math.min(ZOOM_MAX, Math.max(0.56, byWidth)); // below this, pan instead of shrinking
+    return zoomMode;
+  }
+
   function fitStage() {
     if (!sizer) return;
     const wrap = $('#floorWrap');
     const H = stageHeight();
-    const scale = Math.max(0.56, Math.min(1, (wrap.clientWidth - 2) / W)); // below this, pan instead of shrinking
-    $('#stage').style.transform = `scale(${scale})`;
-    sizer.style.width = W * scale + 'px';
-    sizer.style.height = H * scale + 'px';
-    sizer.style.margin = '0 auto';
+    scaleNow = stageScale();
+    $('#stage').style.transform = `scale(${scaleNow})`;
+    sizer.style.width = W * scaleNow + 'px';
+    sizer.style.height = H * scaleNow + 'px';
+    // Centred both ways when it's smaller than the window.
+    sizer.style.margin = `${Math.max(0, (wrap.clientHeight - H * scaleNow) / 2)}px auto 0`;
+    $('#zoomLevel').textContent = Math.round(scaleNow * 100) + '%';
+    for (const b of document.querySelectorAll('#zoomBar [data-zoom]')) {
+      if (b.dataset.zoom === 'width' || b.dataset.zoom === 'all') b.setAttribute('aria-pressed', zoomMode === b.dataset.zoom);
+    }
+  }
+
+  /** Changes zoom while keeping the point under the anchor (the pointer, or the middle of the floor) in place. */
+  function setZoom(mode, anchor) {
+    const wrap = $('#floorWrap');
+    const ax = anchor?.x ?? wrap.clientWidth / 2, ay = anchor?.y ?? wrap.clientHeight / 2;
+    const px = (wrap.scrollLeft + ax - sizer.offsetLeft) / scaleNow;
+    const py = (wrap.scrollTop + ay - sizer.offsetTop) / scaleNow;
+    zoomMode = typeof mode === 'number' ? clampZoom(mode) : mode;
+    try { localStorage.setItem('office.zoom', String(zoomMode)); } catch { /* zoom just won't be remembered */ }
+    fitStage();
+    wrap.scrollLeft = px * scaleNow + sizer.offsetLeft - ax;
+    wrap.scrollTop = py * scaleNow + sizer.offsetTop - ay;
+  }
+
+  function wireZoom() {
+    $('#zoomBar').addEventListener('click', (ev) => {
+      const z = ev.target.closest('[data-zoom]')?.dataset.zoom;
+      if (z === 'in') setZoom(ZOOM_STEPS.find((s) => s > scaleNow + 0.01) ?? ZOOM_MAX);
+      else if (z === 'out') setZoom([...ZOOM_STEPS].reverse().find((s) => s < scaleNow - 0.01) ?? ZOOM_MIN);
+      else if (z) setZoom(z);
+    });
+    // ⌘/Ctrl + scroll, and trackpad pinch (which browsers report as ctrl + wheel), zoom around the pointer.
+    $('#floorWrap').addEventListener('wheel', (ev) => {
+      if (!ev.ctrlKey && !ev.metaKey) return;
+      ev.preventDefault();
+      const r = ev.currentTarget.getBoundingClientRect();
+      setZoom(scaleNow * Math.exp(-ev.deltaY * 0.01), { x: ev.clientX - r.left, y: ev.clientY - r.top });
+    }, { passive: false });
   }
 
   // ================================================================ where each person should be
@@ -1116,9 +1235,13 @@
       <div class="field"><span>Can</span><div class="toggles">
         ${toggle('files', 'Read & write files', 'Inside the mission folder only')}
         ${toggle('delegate', 'Ask colleagues', 'Walk over and hand off work')}
+        ${toggle('plan', 'Plan on the board', 'Add, assign and move office cards')}
         ${toggle('web', 'Browse the web', 'Public sites only')}
         ${toggle('shell', 'Run commands', 'Builds, tests, git — in the mission folder')}
       </div></div>
+      <div class="field"><span>Skills</span>
+        <div class="skill-pick" data-skill-pick>${skillPickHtml(p.skills || [])}</div>
+        <small>Playbooks they load when the work calls for it. <button type="button" class="linkish" data-action="manage-skills">Manage skills</button></small></div>
       ${mode === 'edit' ? `<div style="display:flex;gap:8px;justify-content:space-between;align-items:center;margin-top:4px">
         <button type="button" class="btn danger" data-action="fire">Let ${esc(p.name)} go</button>
         <span class="dlg-error" data-error></span>
@@ -1129,6 +1252,8 @@
 
   /** Two-way binds a profile form to a draft object. */
   function wireProfileForm(root, draft, mode) {
+    draft.skills ||= [];
+    formDrafts.set(root, draft);
     const preview = () => { const pv = root.querySelector('[data-preview]'); if (pv) pv.innerHTML = avatar(draft.look); };
     root.addEventListener('input', (ev) => {
       const f = ev.target.dataset.field;
@@ -1140,11 +1265,19 @@
     root.addEventListener('change', (ev) => {
       const f = ev.target.dataset.field;
       if (f) draft[f] = ev.target.value;
+      if (ev.target.matches('[data-add-skill]') && ev.target.value) {
+        if (!draft.skills.includes(ev.target.value)) draft.skills.push(ev.target.value);
+        refreshSkillPick(root);
+        root.querySelector('[data-add-skill]')?.focus();
+      }
     });
     root.addEventListener('click', async (ev) => {
       const btn = ev.target.closest('button');
       if (!btn) return;
-      if (btn.dataset.look) {
+      if (btn.dataset.removeSkill) {
+        draft.skills = draft.skills.filter((n) => n !== btn.dataset.removeSkill);
+        refreshSkillPick(root);
+      } else if (btn.dataset.look) {
         draft.look[btn.dataset.look] = btn.dataset.value;
         root.querySelectorAll(`[data-look="${btn.dataset.look}"]`).forEach((b) => b.setAttribute('aria-pressed', b === btn));
         preview();
@@ -1186,7 +1319,7 @@
   let hirePicked = ''; // title of the role template the draft started from
   function openHire() {
     const dlg = $('#dlgHire');
-    hireDraft = { name: freshName(), title: '', summary: '', persona: '', provider: '', model: '', look: randomLook(), can: { files: true, shell: false, web: false, delegate: true } };
+    hireDraft = { name: freshName(), title: '', summary: '', persona: '', provider: '', model: '', look: randomLook(), can: { files: true, shell: false, web: false, delegate: true }, skills: [] };
     hirePicked = '';
     dlg.innerHTML = `<form class="dlg" method="dialog" data-form="hire">
       <div class="dlg-head"><h2 id="hireTitle">Hire a colleague</h2><button type="button" class="btn ghost close" data-action="close-dialog" aria-label="Close">✕</button></div>
@@ -1213,6 +1346,7 @@
       hireDraft.title = r?.title || '';
       hireDraft.summary = r?.summary || '';
       hireDraft.persona = r?.persona || '';
+      hireDraft.skills = [...(r?.skills || [])];
       if (r?.can) hireDraft.can = { ...hireDraft.can, ...r.can };
       if (r?.look) hireDraft.look = { ...hireDraft.look, ...r.look };
       const form = $('#hireForm', dlg);
@@ -1227,7 +1361,8 @@
     return `<button type="button" class="template" data-template="-1" aria-pressed="${!picked}"><b>Blank</b><span>Write the role yourself.</span></button>
       ${S.roles.map((r, i) => `<div class="template-item">
         <button type="button" class="template" data-template="${i}" aria-pressed="${r.title.toLowerCase() === picked}">
-          <b>${esc(r.title)}${r.custom ? ` <em class="role-tag">${r.replacesBuiltIn ? 'edited' : 'yours'}</em>` : ''}</b><span>${esc(r.summary)}</span></button>
+          <b>${esc(r.title)}${r.custom ? ` <em class="role-tag">${r.replacesBuiltIn ? 'edited' : 'yours'}</em>` : ''}</b><span>${esc(r.summary)}</span>
+          ${r.skills?.length ? `<span class="role-skills">${r.skills.length === 1 ? '1 skill' : `${r.skills.length} skills`}: ${esc(r.skills.join(', '))}</span>` : ''}</button>
         ${r.custom ? `<button type="button" class="template-del" data-delete-role="${esc(r.id)}" data-reset="${r.replacesBuiltIn ? '1' : ''}"
           title="${r.replacesBuiltIn ? 'Reset to the built-in role' : 'Delete this role'}" aria-label="${r.replacesBuiltIn ? 'Reset' : 'Delete'} ${esc(r.title)}">${r.replacesBuiltIn ? '↺' : '✕'}</button>` : ''}
       </div>`).join('')}`;
@@ -1250,7 +1385,7 @@
     const known = S.roles.find((r) => r.title.toLowerCase() === title.toLowerCase());
     const summary = (draft.summary || '').trim() || known?.summary || clip((draft.persona || '').split(/(?<=[.!?])\s/)[0], 140);
     try {
-      const saved = await backend.post('api/roles', { title, summary, persona: draft.persona, can: draft.can, look: { shirt: draft.look.shirt, accessory: draft.look.accessory } });
+      const saved = await backend.post('api/roles', { title, summary, persona: draft.persona, can: draft.can, look: { shirt: draft.look.shirt, accessory: draft.look.accessory }, skills: draft.skills || [] });
       if (draft === hireDraft) hirePicked = saved.title;
       await reloadRoles();
       toast(known ? `Updated the ${saved.title} role.` : `Saved ${saved.title} as a role.`);
@@ -1297,10 +1432,375 @@
       const r = S.roles.find((x) => x.title.toLowerCase() === title.toLowerCase());
       if (!r) continue;
       const look = { ...randomLook(), ...(r.look || {}) };
-      try { await backend.post('api/agents', { name: freshName(), title: r.title, persona: r.persona, provider: '', model: '', look, can: r.can }); }
+      try { await backend.post('api/agents', { name: freshName(), title: r.title, persona: r.persona, provider: '', model: '', look, can: r.can, skills: r.skills || [] }); }
       catch (e) { toast(e.message); break; }
       await new Promise((res) => setTimeout(res, 450));
     }
+  }
+
+  // ================================================================ skills
+  const formDrafts = new WeakMap(); // profile form root -> the draft it edits
+
+  /** Attached skills as removable chips, then a menu of the library's other skills. */
+  function skillPickHtml(names) {
+    const byName = new Map(S.skills.map((s) => [s.name, s]));
+    const chips = names.map((n) => {
+      const s = byName.get(n);
+      return `<span class="skill-chip ${s ? '' : 'missing'}" title="${esc(s ? s.description : 'Not in the skill library any more')}">${esc(n)}
+        <button type="button" data-remove-skill="${esc(n)}" aria-label="Remove ${esc(n)}">✕</button></span>`;
+    }).join('');
+    const rest = S.skills.filter((s) => !names.includes(s.name));
+    const menu = rest.length
+      ? `<select data-add-skill aria-label="Add a skill"><option value="">+ Add a skill…</option>${rest.map((s) => `<option value="${esc(s.name)}">${esc(s.name)} — ${esc(clip(s.description, 60))}</option>`).join('')}</select>`
+      : S.skills.length ? '' : '<span class="skill-none">No skills in the library yet.</span>';
+    return chips + menu;
+  }
+
+  function refreshSkillPick(root) {
+    const pick = root.querySelector('[data-skill-pick]');
+    if (pick) pick.innerHTML = skillPickHtml(formDrafts.get(root)?.skills || []);
+  }
+
+  function refreshSkillPicks() {
+    for (const pick of document.querySelectorAll('[data-skill-pick]')) {
+      for (let el = pick.parentElement; el; el = el.parentElement) {
+        if (formDrafts.has(el)) { refreshSkillPick(el); break; }
+      }
+    }
+  }
+
+  let skillSel = null; // name of the skill being edited, or '' for a new one
+  function openSkills(name) {
+    const dlg = $('#dlgSkills');
+    skillSel = name ?? S.skills[0]?.name ?? '';
+    dlg.innerHTML = `<form class="dlg" method="dialog" data-form="skill">
+      <div class="dlg-head"><h2 id="skillsTitle">Skills</h2><button type="button" class="btn ghost close" data-action="close-dialog" aria-label="Close">✕</button></div>
+      <div class="dlg-body"><div class="skills-grid">
+        <div><div class="skill-actions">
+            <button type="button" class="btn" data-skill-new>+ New skill</button>
+            <button type="button" class="btn" data-skill-import title="Import a SKILL.md file">Import</button>
+            <input type="file" accept=".md,text/markdown,text/plain" hidden data-skill-file>
+          </div>
+          <div class="skill-list" id="skillList"></div></div>
+        <div id="skillEditor"></div>
+      </div></div>
+      <div class="dlg-foot"><span class="dlg-error" data-error></span>
+        <button type="button" class="btn danger" data-skill-delete hidden>Delete</button>
+        <button type="button" class="btn" data-action="close-dialog">Close</button>
+        <button class="btn primary" id="skillSave">Save skill</button></div>
+    </form>`;
+    const err = () => dlg.querySelector('.dlg-foot [data-error]');
+    dlg.querySelector('[data-skill-new]').onclick = () => { skillSel = ''; renderSkillList(); renderSkillEditor(); };
+    dlg.querySelector('[data-skill-import]').onclick = () => dlg.querySelector('[data-skill-file]').click();
+    dlg.querySelector('[data-skill-file]').onchange = async (ev) => {
+      const file = ev.target.files?.[0];
+      ev.target.value = '';
+      if (!file) return;
+      err().textContent = '';
+      try {
+        const saved = await backend.post('api/skills/import', { text: await file.text() });
+        await reloadSkills(saved.name);
+        toast(`Imported ${saved.name}.`);
+      } catch (e) { err().textContent = e.message; }
+    };
+    dlg.querySelector('#skillList').onclick = (ev) => {
+      const item = ev.target.closest('[data-skill]');
+      if (!item) return;
+      skillSel = item.dataset.skill; renderSkillList(); renderSkillEditor();
+    };
+    dlg.querySelector('[data-skill-delete]').onclick = async (ev) => {
+      const btn = ev.currentTarget;
+      if (btn.dataset.armed !== '1') {
+        btn.dataset.armed = '1'; btn.textContent = `Yes, delete ${skillSel}`;
+        setTimeout(() => { if (btn.isConnected) { btn.dataset.armed = ''; btn.textContent = 'Delete'; } }, 4000);
+        return;
+      }
+      err().textContent = '';
+      try {
+        const name = skillSel;
+        await backend.del(`api/skills/${encodeURIComponent(name)}`);
+        await reloadSkills(S.skills.find((s) => s.name !== name)?.name ?? '');
+        toast(`Deleted ${name}. Colleagues and roles that had it no longer do.`);
+      } catch (e) { err().textContent = e.message; }
+    };
+    renderSkillList();
+    renderSkillEditor();
+    if (!dlg.open) dlg.showModal();
+  }
+
+  async function reloadSkills(select) {
+    try { S.skills = (await backend.get('api/skills')) || []; } catch { /* skills.updated will catch up */ }
+    refreshSkillPicks();
+    if (select !== undefined) skillSel = select;
+    if ($('#dlgSkills').open) { renderSkillList(); renderSkillEditor(); }
+  }
+
+  function renderSkillList() {
+    const list = $('#skillList');
+    if (!list) return;
+    list.innerHTML = (skillSel === '' ? `<button type="button" class="template" aria-pressed="true"><b>New skill</b><span>Not saved yet</span></button>` : '')
+      + (S.skills.length || skillSel === '' ? S.skills.map((s) => `<button type="button" class="template" data-skill="${esc(s.name)}" aria-pressed="${s.name === skillSel}">
+          <b>${esc(s.name)}${s.readOnly ? ` <em class="role-tag">${esc(s.source)}</em>` : ''}</b><span>${esc(clip(s.description, 110))}</span></button>`).join('')
+        : '<p class="skill-none">No skills yet. Write one, or import a SKILL.md.</p>');
+  }
+
+  function renderSkillEditor() {
+    const host = $('#skillEditor');
+    const dlg = $('#dlgSkills');
+    const s = skillSel ? S.skills.find((x) => x.name === skillSel) : null;
+    const isNew = skillSel === '' || !s;
+    const ro = !!s?.readOnly;
+    dlg.querySelector('[data-skill-delete]').hidden = isNew || ro;
+    dlg.querySelector('#skillSave').hidden = ro;
+    const used = [...S.agents.values()].filter((a) => (a.profile.skills || []).includes(s?.name)).map((a) => a.profile.name);
+    host.innerHTML = `<div class="form">
+      ${ro ? `<p class="skill-note">This skill comes from <code>${esc(s.source)}</code> and is read-only here. Edit it there, or import a copy to change it in the office.</p>` : ''}
+      <label class="field"><span>Name</span><input data-skill-field="name" maxlength="64" value="${esc(s?.name || '')}" ${isNew ? '' : 'readonly'} placeholder="e.g. release-notes" pattern="[a-z0-9]+(-[a-z0-9]+)*" required>
+        <small>${isNew ? 'Lowercase letters, digits and hyphens. It can\'t be changed later.' : used.length ? `Used by ${esc(used.join(', '))}.` : 'Not attached to anyone yet.'}</small></label>
+      <label class="field"><span>When to use it</span><textarea data-skill-field="description" maxlength="1024" rows="3" ${ro ? 'readonly' : ''} required
+        placeholder="e.g. Writes release notes from merged changes. Use when asked for a changelog or release summary.">${esc(s?.description || '')}</textarea>
+        <small>Colleagues see only this until they load the skill, so say what it does and when it applies.</small></label>
+      <label class="field"><span>Instructions</span><textarea class="skill-body" data-skill-field="instructions" maxlength="60000" ${ro ? 'readonly' : ''}
+        placeholder="Steps, checklists, templates, examples — Markdown is fine.">${esc(s?.instructions || '')}</textarea></label>
+      ${s?.files?.length ? `<div class="field"><span>Bundled files</span><small>${s.files.map((f) => `<code>${esc(f)}</code>`).join(' ')}</small></div>` : ''}
+    </div>`;
+    if (isNew) host.querySelector('[data-skill-field="name"]').focus();
+  }
+
+  async function submitSkill(form) {
+    const err = form.querySelector('.dlg-foot [data-error]');
+    err.textContent = '';
+    const val = (k) => form.querySelector(`[data-skill-field="${k}"]`).value;
+    const body = { name: val('name').trim(), description: val('description'), instructions: val('instructions') };
+    const existing = S.skills.find((s) => s.name === skillSel);
+    try {
+      const saved = existing
+        ? await backend.put(`api/skills/${encodeURIComponent(existing.name)}`, body)
+        : await backend.post('api/skills', body);
+      await reloadSkills(saved.name);
+      toast(existing ? `Saved ${saved.name}.` : `Added ${saved.name}. Attach it to a role or colleague under Skills.`);
+    } catch (e) { err.textContent = e.message; }
+  }
+
+  // ================================================================ office board (kanban)
+  const COLUMNS = [['backlog', 'Backlog'], ['todo', 'To do'], ['doing', 'In progress'], ['review', 'Review'], ['done', 'Done']];
+  const PRIORITIES = [['low', 'Low'], ['normal', 'Normal'], ['high', 'High'], ['urgent', 'Urgent']];
+  const POINTS = [1, 2, 3, 5, 8, 13, 21];
+  let dragCard = null;
+
+  function setBoardOpen(open) {
+    S.boardOpen = open;
+    $('#kanban').hidden = !open;
+    $('#app').classList.toggle('board-open', open);
+    $('#btnBoard').setAttribute('aria-pressed', open);
+    if (open) renderKanban();
+    else fitStage();
+  }
+
+  const pointsOf = (cards) => cards.reduce((n, c) => n + (c.points || 0), 0);
+
+  function renderKanban() {
+    const host = $('#kanban');
+    if (!S.boardOpen || !host) return;
+    const f = S.boardFilter;
+    const shown = S.cards.filter((c) => !f || (f === '-' ? !S.agents.has(c.assignee) : c.assignee === f));
+    const people = [...S.agents.values()].map((a) => a.profile).sort((a, b) => a.name.localeCompare(b.name));
+    const scroll = [...host.querySelectorAll('.kb-list')].map((l) => l.scrollTop);
+    const inProgress = S.cards.filter((c) => c.status === 'doing');
+    host.innerHTML = `<div class="kb-head">
+        <h2>Office board</h2>
+        <span class="kb-sum">${S.cards.length} card${S.cards.length === 1 ? '' : 's'} · ${pointsOf(inProgress)} pts in progress · ${S.cards.filter((c) => c.blocked).length} blocked</span>
+        <span class="spacer"></span>
+        <label class="kb-filter"><span class="sr-only">Show</span><select id="kbFilter">
+          <option value="">Everyone</option><option value="-" ${f === '-' ? 'selected' : ''}>Unassigned</option>
+          ${people.map((p) => `<option value="${esc(p.id)}" ${f === p.id ? 'selected' : ''}>${esc(p.name)}</option>`).join('')}
+        </select></label>
+        <button type="button" class="btn primary" data-kb-new="backlog">+ New card</button>
+        <button type="button" class="btn" data-kb-close>Back to the floor</button>
+      </div>
+      <div class="kb-cols">${COLUMNS.map(([key, label]) => {
+        const cards = shown.filter((c) => c.status === key);
+        const pts = pointsOf(cards);
+        return `<section class="kb-col" data-col="${key}" aria-label="${label}">
+          <header><h3>${label}</h3><span class="kb-count">${cards.length}${pts ? ` · ${pts} pts` : ''}</span>
+            <button type="button" class="kb-add" data-kb-new="${key}" aria-label="Add a card to ${label}">+</button></header>
+          <div class="kb-list" data-list="${key}">${cards.map(cardHtml).join('') || `<p class="kb-empty">${key === 'backlog' ? 'Ideas and requests waiting to be planned.' : key === 'review' ? 'Finished work waits here for you.' : 'Drop cards here.'}</p>`}</div>
+        </section>`;
+      }).join('')}</div>`;
+    host.querySelectorAll('.kb-list').forEach((l, i) => { l.scrollTop = scroll[i] || 0; });
+  }
+
+  function cardHtml(c) {
+    const who = S.agents.get(c.assignee)?.profile;
+    const m = c.missionId ? S.missions.get(c.missionId) : null;
+    const tasks = m?.board || [];
+    const doneTasks = tasks.filter((t) => t.status === 'done').length;
+    const work = m ? (m.running ? 'working on it' : m.status === 'done' ? 'mission done' : m.status) : '';
+    return `<article class="kb-card prio-${esc(c.priority)} ${c.blocked ? 'blocked' : ''}" draggable="true" data-card="${esc(c.id)}" tabindex="0"
+        aria-label="#${c.number} ${esc(c.title)}${who ? `, ${esc(who.name)}` : ''}${c.blocked ? ', blocked' : ''}">
+      <div class="kb-meta"><span class="kb-num">#${c.number}</span>
+        ${c.priority !== 'normal' ? `<span class="kb-prio">${esc(c.priority)}</span>` : ''}
+        ${c.points != null ? `<span class="kb-pts" title="Story points">${c.points}</span>` : ''}</div>
+      <h4>${esc(c.title)}</h4>
+      ${c.blocked ? `<p class="kb-blocked">Blocked${c.blockedReason ? `: ${esc(c.blockedReason)}` : ''}</p>` : ''}
+      ${m ? `<div class="kb-work ${m.running ? 'running' : ''}">${tasks.length ? `<div class="kb-bar"><i style="width:${Math.round((doneTasks / tasks.length) * 100)}%"></i></div>` : ''}
+        <span>${tasks.length ? `${doneTasks}/${tasks.length} tasks · ` : ''}${esc(work)}</span></div>` : ''}
+      <footer>${who ? `<span class="kb-who">${avatar(who.look, 'head')}${esc(who.name)}</span>` : '<span class="kb-who none">Unassigned</span>'}
+        ${c.createdBy !== 'owner' ? `<span class="kb-by">added by ${esc(c.createdBy)}</span>` : ''}</footer>
+    </article>`;
+  }
+
+  function wireKanban() {
+    const host = $('#kanban');
+    host.addEventListener('click', (ev) => {
+      if (ev.target.closest('[data-kb-close]')) return setBoardOpen(false);
+      const add = ev.target.closest('[data-kb-new]');
+      if (add) return openCard(null, add.dataset.kbNew);
+      const card = ev.target.closest('[data-card]');
+      if (card) openCard(card.dataset.card);
+    });
+    host.addEventListener('keydown', (ev) => {
+      const card = ev.target.closest('[data-card]');
+      if (card && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); openCard(card.dataset.card); }
+    });
+    host.addEventListener('change', (ev) => {
+      if (ev.target.id === 'kbFilter') { S.boardFilter = ev.target.value; renderKanban(); }
+    });
+
+    // Drag a card to another column or position; a placeholder shows where it will land.
+    const marker = document.createElement('div');
+    marker.className = 'kb-drop';
+    host.addEventListener('dragstart', (ev) => {
+      const card = ev.target.closest('[data-card]');
+      if (!card) return;
+      dragCard = card.dataset.card;
+      ev.dataTransfer.effectAllowed = 'move';
+      ev.dataTransfer.setData('text/plain', dragCard);
+      requestAnimationFrame(() => card.classList.add('dragging'));
+    });
+    host.addEventListener('dragend', () => {
+      dragCard = null;
+      marker.remove();
+      host.querySelectorAll('.dragging, .drop-target').forEach((el) => el.classList.remove('dragging', 'drop-target'));
+    });
+    host.addEventListener('dragover', (ev) => {
+      const list = ev.target.closest('.kb-col')?.querySelector('.kb-list');
+      if (!dragCard || !list) return;
+      ev.preventDefault();
+      host.querySelectorAll('.drop-target').forEach((el) => el !== list.parentElement && el.classList.remove('drop-target'));
+      list.parentElement.classList.add('drop-target');
+      const before = [...list.querySelectorAll('[data-card]:not(.dragging)')].find((el) => ev.clientY < el.getBoundingClientRect().top + el.offsetHeight / 2);
+      list.insertBefore(marker, before || null);
+    });
+    host.addEventListener('drop', async (ev) => {
+      const list = ev.target.closest('.kb-col')?.querySelector('.kb-list');
+      if (!dragCard || !list) return;
+      ev.preventDefault();
+      const id = dragCard;
+      const next = marker.nextElementSibling?.closest?.('[data-card]');
+      const card = host.querySelector(`[data-card="${CSS.escape(id)}"]`);
+      if (card) list.insertBefore(card, marker); // show it there straight away; the server's update follows
+      marker.remove();
+      try { await backend.post(`api/cards/${encodeURIComponent(id)}/move`, { status: list.dataset.list, beforeId: next?.dataset.card || null }); }
+      catch (e) { toast(e.message); renderKanban(); }
+    });
+  }
+
+  /** Opens the card editor: an existing card by id, or a new one in <paramref name="column"/>. */
+  function openCard(id, column = 'backlog') {
+    const existing = id ? S.cards.find((c) => c.id === id) : null;
+    const c = existing ? { ...existing } : { title: '', description: '', status: column, assignee: null, priority: 'normal', points: null, blocked: false, blockedReason: '' };
+    const dlg = $('#dlgCard');
+    const people = [...S.agents.values()].map((a) => a.profile).sort((a, b) => a.name.localeCompare(b.name));
+    const m = c.missionId ? S.missions.get(c.missionId) : null;
+    dlg.innerHTML = `<form class="dlg" method="dialog" data-form="card">
+      <div class="dlg-head"><h2 id="cardTitle">${existing ? `Card #${c.number}` : 'New card'}</h2><button type="button" class="btn ghost close" data-action="close-dialog" aria-label="Close">✕</button></div>
+      <div class="dlg-body"><div class="form">
+        <label class="field"><span>Title</span><input data-c="title" maxlength="200" required value="${esc(c.title)}" placeholder="e.g. Password reset for the customer portal"></label>
+        <label class="field"><span>Description</span><textarea data-c="description" maxlength="8000" placeholder="What's needed, and how we'll know it's done. This becomes the brief when work starts.">${esc(c.description)}</textarea></label>
+        <div class="two">
+          <label class="field"><span>Column</span><select data-c="status">${COLUMNS.map(([k, l]) => `<option value="${k}" ${c.status === k ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+          <label class="field"><span>Assignee</span><select data-c="assignee"><option value="">Unassigned</option>
+            ${people.map((p) => `<option value="${esc(p.id)}" ${c.assignee === p.id ? 'selected' : ''}>${esc(p.name)}${p.title ? ` — ${esc(p.title)}` : ''}</option>`).join('')}</select></label>
+        </div>
+        <div class="two">
+          <div class="field"><span>Priority</span><div class="seg">${PRIORITIES.map(([k, l]) => `<button type="button" data-prio="${k}" aria-pressed="${c.priority === k}">${l}</button>`).join('')}</div></div>
+          <label class="field"><span>Story points</span><select data-c="points"><option value="">Not estimated</option>
+            ${POINTS.map((n) => `<option value="${n}" ${c.points === n ? 'selected' : ''}>${n}</option>`).join('')}</select></label>
+        </div>
+        <label class="toggle"><input type="checkbox" data-c="blocked" ${c.blocked ? 'checked' : ''}><span><b>Blocked</b><small>Something is in the way</small></span></label>
+        <label class="field" data-reason ${c.blocked ? '' : 'hidden'}><span>What's blocking it</span><input data-c="blockedReason" maxlength="200" value="${esc(c.blockedReason || '')}"></label>
+        ${m ? `<div class="kb-mission"><span>Mission: <b>${esc(clip(m.title, 60))}</b> · ${m.running ? 'running' : esc(m.status)}</span><button type="button" class="btn" data-open-mission>Open mission</button></div>` : ''}
+        ${existing && existing.createdBy !== 'owner' ? `<small class="kb-by">Added by ${esc(existing.createdBy)}</small>` : ''}
+      </div></div>
+      <div class="dlg-foot"><span class="dlg-error" data-error></span>
+        ${existing ? '<button type="button" class="btn danger" data-delete-card>Delete</button>' : ''}
+        <button type="button" class="btn" data-start-card></button>
+        <button class="btn primary">${existing ? 'Save' : 'Add card'}</button></div>
+    </form>`;
+    dlg.dataset.card = existing?.id || '';
+    dlg.dataset.priority = c.priority;
+    const startBtn = dlg.querySelector('[data-start-card]');
+    const refreshStart = () => {
+      const who = S.agents.get(dlg.querySelector('[data-c="assignee"]').value)?.profile;
+      const running = m?.running;
+      startBtn.hidden = !who || running;
+      startBtn.textContent = who ? `${c.missionId ? 'Start again' : 'Start work'} with ${who.name}` : '';
+    };
+    refreshStart();
+    dlg.querySelector('[data-c="assignee"]').onchange = refreshStart;
+    dlg.querySelector('[data-c="blocked"]').onchange = (ev) => { dlg.querySelector('[data-reason]').hidden = !ev.target.checked; };
+    dlg.querySelectorAll('[data-prio]').forEach((b) => { b.onclick = () => { dlg.dataset.priority = b.dataset.prio; dlg.querySelectorAll('[data-prio]').forEach((x) => x.setAttribute('aria-pressed', x === b)); }; });
+    dlg.querySelector('[data-open-mission]')?.addEventListener('click', () => { dlg.close(); setBoardOpen(false); focusMission(c.missionId); });
+    dlg.querySelector('[data-delete-card]')?.addEventListener('click', async (ev) => {
+      const btn = ev.currentTarget;
+      if (btn.dataset.armed !== '1') {
+        btn.dataset.armed = '1'; btn.textContent = 'Yes, delete it';
+        setTimeout(() => { if (btn.isConnected) { btn.dataset.armed = ''; btn.textContent = 'Delete'; } }, 4000);
+        return;
+      }
+      try { await backend.del(`api/cards/${encodeURIComponent(existing.id)}`); dlg.close(); toast(`Deleted #${existing.number}.`); }
+      catch (e) { dlg.querySelector('[data-error]').textContent = e.message; }
+    });
+    startBtn.onclick = async () => {
+      const saved = await saveCard(dlg.querySelector('form'));
+      if (!saved) return;
+      try {
+        await backend.post(`api/cards/${encodeURIComponent(saved.id)}/start`, {});
+        dlg.close();
+        toast(`${nameOf(saved.assignee)} is on #${saved.number}.`);
+      } catch (e) { dlg.querySelector('[data-error]').textContent = e.message; }
+    };
+    dlg.showModal();
+    if (!existing) dlg.querySelector('[data-c="title"]').focus();
+  }
+
+  async function saveCard(form) {
+    const dlg = $('#dlgCard');
+    const err = form.querySelector('[data-error]');
+    err.textContent = '';
+    const v = (k) => form.querySelector(`[data-c="${k}"]`);
+    if (!v('title').value.trim()) { err.textContent = 'Give the card a title.'; return null; }
+    const body = {
+      title: v('title').value, description: v('description').value, status: v('status').value,
+      assignee: v('assignee').value || null, priority: dlg.dataset.priority || 'normal',
+      points: v('points').value ? +v('points').value : null,
+      blocked: v('blocked').checked, blockedReason: v('blockedReason').value,
+    };
+    try {
+      const id = dlg.dataset.card;
+      const saved = id ? await backend.put(`api/cards/${encodeURIComponent(id)}`, body) : await backend.post('api/cards', body);
+      dlg.dataset.card = saved.id;
+      return saved;
+    } catch (e) { err.textContent = e.message; return null; }
+  }
+
+  async function submitCard(form) {
+    const existing = !!$('#dlgCard').dataset.card;
+    const saved = await saveCard(form);
+    if (!saved) return;
+    $('#dlgCard').close();
+    if (!existing) toast(`Added #${saved.number}.`);
   }
 
   // ================================================================ mission dialog
@@ -1391,6 +1891,7 @@
   function wire() {
     $('#btnHire').onclick = openHire;
     $('#btnNewMission').onclick = openNewMission;
+    $('#btnBoard').onclick = () => setBoardOpen(!S.boardOpen);
     $('#btnMissions').onclick = () => (S.drawer === 'missions' ? closeDrawer() : openMissions());
     $('#officeName').onclick = () => {
       // Inline rename: swap the title for an input; Enter or blur saves, Escape cancels.
@@ -1425,6 +1926,7 @@
       if (action === 'new-mission') return openNewMission();
       if (action === 'close-drawer') return closeDrawer();
       if (action === 'close-dialog') return t.closest('dialog').close();
+      if (action === 'manage-skills') return openSkills();
       if (action === 'toggle-console') { S.consoleCollapsed = !S.consoleCollapsed; renderConsole(); return; }
       if (action === 'cancel' && S.focus) { try { await backend.post(`api/missions/${S.focus}/cancel`); } catch (e) { toast(e.message); } return; }
 
@@ -1453,6 +1955,8 @@
       ev.preventDefault();
       if (kind === 'hire') return submitHire(form);
       if (kind === 'mission') return submitMission(form);
+      if (kind === 'skill') return submitSkill(form);
+      if (kind === 'card') return submitCard(form);
       const ta = form.querySelector('textarea');
       const text = ta.value.trim();
       if (!text) return;
@@ -1468,6 +1972,8 @@
       } catch (e) { toast(e.message); }
     });
 
+    wireZoom();
+    wireKanban();
     new ResizeObserver(fitStage).observe($('#floorWrap'));
   }
 

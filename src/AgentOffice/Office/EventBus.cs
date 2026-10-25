@@ -14,7 +14,7 @@ public sealed class EventBus(IHubContext<OfficeHub> hub, OfficeStore store, ILog
     private const int RecentCapacity = 400;
 
     /// <summary>Kinds that are too chatty to persist (the final text is persisted separately).</summary>
-    private static readonly HashSet<string> Ephemeral = ["agent.delta", "agent.status"];
+    private static readonly HashSet<string> Ephemeral = ["agent.delta", "agent.status", "cards.updated"];
 
     public OfficeEvent Publish(string kind, string? missionId = null, string? agentId = null, object? data = null)
     {

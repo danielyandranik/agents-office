@@ -17,6 +17,10 @@
       <span class="headcount" id="headcount"></span>
       <span class="demo-flag" id="demoFlag" hidden>Demo<span class="long"> — simulated in your browser</span></span>
       <span class="spacer"></span>
+      <button class="btn" id="btnBoard" aria-label="Office board" aria-pressed="false">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="2" y="2.5" width="3.2" height="11" rx="1"/><rect x="6.4" y="2.5" width="3.2" height="7" rx="1"/><rect x="10.8" y="2.5" width="3.2" height="9" rx="1"/></svg>
+        <span class="label">Board</span>
+      </button>
       <button class="btn" id="btnMissions" aria-label="Missions">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M2.5 3.5h11M2.5 8h11M2.5 12.5h7"/></svg>
         <span class="label">Missions</span><span class="count" id="runningCount" hidden></span>
@@ -34,6 +38,16 @@
     <main class="floor-wrap" id="floorWrap" aria-label="Office floor">
       <div class="stage" id="stage"></div>
     </main>
+    <div class="zoom" id="zoomBar" role="group" aria-label="Zoom">
+      <button type="button" data-zoom="out" aria-label="Zoom out" title="Zoom out (⌘/Ctrl + scroll)">−</button>
+      <output id="zoomLevel" aria-live="polite">100%</output>
+      <button type="button" data-zoom="in" aria-label="Zoom in" title="Zoom in (⌘/Ctrl + scroll)">+</button>
+      <span class="zoom-sep" aria-hidden="true"></span>
+      <button type="button" data-zoom="width" title="Fill the window's width">Fit<span class="long"> width</span></button>
+      <button type="button" data-zoom="all" title="See the whole office at once">Whole<span class="long"> office</span></button>
+    </div>
+
+    <section class="kanban" id="kanban" aria-label="Office board" hidden></section>
 
     <section class="console" id="console" aria-label="Mission log"></section>
 
@@ -42,6 +56,8 @@
 
   <dialog id="dlgHire" aria-labelledby="hireTitle"></dialog>
   <dialog id="dlgMission" class="narrow" aria-labelledby="missionTitle"></dialog>
+  <dialog id="dlgSkills" aria-labelledby="skillsTitle"></dialog>
+  <dialog id="dlgCard" class="narrow" aria-labelledby="cardTitle"></dialog>
   <div class="toast-host" id="toasts" role="status" aria-live="polite"></div>
 
   <script src="lib/signalr.min.js"></script>

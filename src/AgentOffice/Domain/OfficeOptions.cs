@@ -15,6 +15,12 @@ public sealed class OfficeOptions
 
     public const string DefaultWorkspaceRoot = "~/agent-office-workspaces";
 
+    /// <summary>
+    /// Extra folders of Agent Skills (one sub-folder per skill, each with a SKILL.md), e.g. ~/.claude/skills.
+    /// They show up read-only in the skill library; skills made in the office live in DataDir/skills.
+    /// </summary>
+    public List<string> SkillDirs { get; set; } = [];
+
     /// <summary>Max tool-call round trips per agent turn.</summary>
     public int MaxStepsPerTurn { get; set; } = 24;
 

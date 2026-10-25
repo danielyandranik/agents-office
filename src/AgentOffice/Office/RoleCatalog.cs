@@ -10,7 +10,7 @@ namespace AgentOffice.Office;
 /// </summary>
 public sealed class RoleCatalog(OfficeStore store, EventBus bus, IHostEnvironment env)
 {
-    public sealed record RoleView(string? Id, string Title, string Summary, string Persona, Capabilities Can, RoleLook Look, bool Custom, bool ReplacesBuiltIn);
+    public sealed record RoleView(string? Id, string Title, string Summary, string Persona, Capabilities Can, RoleLook Look, List<string> Skills, bool Custom, bool ReplacesBuiltIn);
 
     private readonly Lazy<List<RoleTemplate>> _builtIn = new(() => LoadBuiltIn(env));
 
@@ -48,6 +48,7 @@ public sealed class RoleCatalog(OfficeStore store, EventBus bus, IHostEnvironmen
             existing.Persona = role.Persona ?? "";
             existing.Can = role.Can ?? new();
             existing.Look = role.Look ?? new();
+            existing.Skills = CleanSkills(role.Skills);
             return OfficeStore.Clone(existing)!;
         });
         Changed();
@@ -67,7 +68,11 @@ public sealed class RoleCatalog(OfficeStore store, EventBus bus, IHostEnvironmen
     private void Changed() => bus.Publish("roles.updated", data: new { roles = List() });
 
     private static RoleView View(RoleTemplate r, bool custom, bool replaces) =>
-        new(r.Id, r.Title, r.Summary, r.Persona, r.Can, r.Look, custom, replaces);
+        new(r.Id, r.Title, r.Summary, r.Persona, r.Can, r.Look, r.Skills, custom, replaces);
+
+    /// <summary>Trimmed, de-duplicated skill names (at most 20).</summary>
+    public static List<string> CleanSkills(IEnumerable<string>? skills) =>
+        (skills ?? []).Select(s => (s ?? "").Trim()).Where(s => s.Length is > 0 and <= 64).Distinct().Take(20).ToList();
 
     private static List<RoleTemplate> LoadBuiltIn(IHostEnvironment env)
     {

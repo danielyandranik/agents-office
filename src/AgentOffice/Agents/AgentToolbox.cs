@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
 using AgentOffice.Domain;
+using AgentOffice.Office;
 using Microsoft.Extensions.AI;
 
 namespace AgentOffice.Agents;
@@ -27,7 +28,8 @@ public sealed partial class AgentToolbox(
     AgentProfile me,
     RunContext ctx,
     OfficeOptions options,
-    IHttpClientFactory httpFactory)
+    IHttpClientFactory httpFactory,
+    IReadOnlyList<SkillLibrary.SkillView> skills)
 {
     public IList<AITool> Build(IReadOnlyList<AgentProfile> colleagues)
     {
@@ -54,6 +56,21 @@ public sealed partial class AgentToolbox(
         if (me.Can.Web)
         {
             tools.Add(AIFunctionFactory.Create(FetchUrl, "fetch_url", "Fetch a public web page and return its text."));
+        }
+
+        if (me.Can.Plan)
+        {
+            tools.Add(AIFunctionFactory.Create(OfficeBoardList, "office_board_list", "List cards on the office board (the team's work across all missions)."));
+            tools.Add(AIFunctionFactory.Create(OfficeBoardAdd, "office_board_add", "Add a card to the office board. Returns its number, e.g. #12."));
+            tools.Add(AIFunctionFactory.Create(OfficeBoardUpdate, "office_board_update", "Move, assign, estimate or flag a card on the office board."));
+        }
+
+        if (skills.Count > 0)
+        {
+            tools.Add(AIFunctionFactory.Create(UseSkill, "use_skill",
+                $"Load the full instructions of one of your skills. Skills: {string.Join(", ", skills.Select(s => s.Name))}."));
+            if (skills.Any(s => s.Files.Count > 0))
+                tools.Add(AIFunctionFactory.Create(ReadSkillFile, "read_skill_file", "Read a file bundled with one of your skills (use_skill lists them)."));
         }
 
         var others = colleagues.Where(c => c.Id != me.Id).ToList();
@@ -106,6 +123,81 @@ public sealed partial class AgentToolbox(
             return true;
         });
         return found ? $"{id} is now {status}." : $"No task {id}. Use board_list to see ids.";
+    }
+
+    // ---------------------------------------------------------------- office board
+
+    private string OfficeBoardList([Description("Only this column: backlog, todo, doing, review or done. Default: every column.")] string? status = null)
+    {
+        var names = runtime.Store.Read(s => s.Agents.ToDictionary(a => a.Id, a => a.Name));
+        var only = status?.Trim().ToLowerInvariant();
+        var cards = runtime.Board.List().Where(c => string.IsNullOrEmpty(only) || c.Status == only).ToList();
+        if (cards.Count == 0) return only is { Length: > 0 } ? $"No cards in {only}." : "The office board is empty.";
+        return string.Join('\n', cards.Select(c =>
+            $"#{c.Number} [{c.Status}] {c.Title}"
+            + (c.Assignee is not null && names.TryGetValue(c.Assignee, out var n) ? $" — {n}" : " — unassigned")
+            + (c.Points is { } p ? $" · {p} pts" : "")
+            + (c.Priority != "normal" ? $" · {c.Priority}" : "")
+            + (c.Blocked ? $" · BLOCKED: {c.BlockedReason}" : "")));
+    }
+
+    private string OfficeBoardAdd(
+        [Description("Short title of the work item.")] string title,
+        [Description("What needs doing and how we'll know it's done.")] string? description = null,
+        [Description("Colleague name to assign, if any.")] string? assignee = null,
+        [Description("low | normal | high | urgent. Default normal.")] string? priority = null,
+        [Description("Story points estimate (e.g. 1, 2, 3, 5, 8).")] int? points = null,
+        [Description("backlog (default) or todo.")] string? status = null)
+    {
+        if (status?.Trim().ToLowerInvariant() is { } st && st is not ("backlog" or "todo")) return "New cards go in backlog or todo.";
+        try
+        {
+            var c = runtime.Board.Create(new CardChanges(title, description ?? "", status ?? CardStatus.Backlog, assignee, priority, points), me.Name);
+            return $"Added #{c.Number} to {c.Status}.";
+        }
+        catch (OfficeException ex) { return ex.Message; }
+    }
+
+    private string OfficeBoardUpdate(
+        [Description("Card number, e.g. 12.")] int card,
+        [Description("Move to: backlog, todo, doing or review. Only the owner moves cards to done.")] string? status = null,
+        [Description("Colleague name to assign.")] string? assignee = null,
+        [Description("low | normal | high | urgent.")] string? priority = null,
+        [Description("Story points estimate.")] int? points = null,
+        [Description("true to flag the card blocked, false to clear it.")] bool? blocked = null,
+        [Description("Why it's blocked.")] string? reason = null)
+    {
+        if (status?.Trim().ToLowerInvariant() == CardStatus.Done) return "Only the owner moves cards to done. Move it to review when it's ready.";
+        try
+        {
+            var c = runtime.Board.Update(card.ToString(), new CardChanges(Status: status, Assignee: assignee, Priority: priority, Points: points, Blocked: blocked, BlockedReason: reason));
+            return $"#{c.Number} is in {c.Status}{(c.Blocked ? " (blocked)" : "")}.";
+        }
+        catch (OfficeException ex) { return ex.Message; }
+    }
+
+    // ---------------------------------------------------------------- skills
+
+    private string UseSkill([Description("Skill name.")] string name)
+    {
+        var skill = skills.FirstOrDefault(s => s.Name == (name ?? "").Trim());
+        if (skill is null) return $"You don't have a skill called '{name}'. Yours: {string.Join(", ", skills.Select(s => s.Name))}.";
+        var text = $"# Skill: {skill.Name}\n\n{skill.Instructions}";
+        if (skill.Files.Count > 0) text += $"\n\nFiles bundled with this skill (read them with read_skill_file):\n- {string.Join("\n- ", skill.Files)}";
+        return Clip(text, Math.Max(options.MaxToolOutputChars, 40_000));
+    }
+
+    private string ReadSkillFile(
+        [Description("Skill name.")] string skill,
+        [Description("File path inside the skill, as listed by use_skill.")] string path)
+    {
+        var s = skills.FirstOrDefault(x => x.Name == (skill ?? "").Trim());
+        if (s is null) return $"You don't have a skill called '{skill}'.";
+        var root = Path.GetFullPath(s.Dir);
+        var full = Path.GetFullPath(Path.Combine(root, path ?? ""));
+        if (!Paths.IsInside(full, root) || !Paths.IsInside(RealPath(full), RealPath(root))) return $"'{path}' is not part of the {s.Name} skill.";
+        if (!File.Exists(full)) return $"No file '{path}' in the {s.Name} skill.";
+        return Clip(File.ReadAllText(full), options.MaxToolOutputChars);
     }
 
     // ---------------------------------------------------------------- files

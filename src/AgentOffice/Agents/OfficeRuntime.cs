@@ -36,6 +36,8 @@ public sealed partial class OfficeRuntime(
     IOptions<OfficeOptions> officeOptions,
     IHttpClientFactory httpFactory,
     IHostEnvironment env,
+    SkillLibrary skills,
+    OfficeBoard board,
     ILogger<OfficeRuntime> log)
 {
     private readonly OfficeOptions _opt = officeOptions.Value;
@@ -48,6 +50,7 @@ public sealed partial class OfficeRuntime(
 
     public OfficeStore Store => store;
     public EventBus Bus => bus;
+    public OfficeBoard Board => board;
 
     public AgentPresence PresenceOf(string agentId) =>
         _presence.TryGetValue(agentId, out var p) ? p : new AgentPresence("idle", null, null, null, DateTimeOffset.UtcNow);
@@ -93,6 +96,7 @@ public sealed partial class OfficeRuntime(
             a.Model = changes.Model;
             a.Look = changes.Look;
             a.Can = changes.Can;
+            a.Skills = changes.Skills;
             return OfficeStore.Clone(a)!;
         });
         bus.Publish("office.updated", agentId: id, data: updated);
@@ -111,6 +115,7 @@ public sealed partial class OfficeRuntime(
             return a;
         });
         _presence.TryRemove(id, out _);
+        board.Unassign(id);
         bus.Publish("office.fired", agentId: id, data: new { fired.Id, fired.Name });
     }
 
@@ -125,6 +130,7 @@ public sealed partial class OfficeRuntime(
         p.Model = (p.Model ?? "").Trim();
         p.Look ??= new();
         p.Can ??= new();
+        p.Skills = RoleCatalog.CleanSkills(p.Skills);
         if (p.Provider.Length > 0 && clients.Describe().All(x => x.Id != p.Provider))
             throw new OfficeException(400, $"Unknown provider '{p.Provider}'.");
     }
@@ -238,6 +244,7 @@ public sealed partial class OfficeRuntime(
         try
         {
             SetMission(missionId, m => { m.Status = MissionStatus.Running; m.Error = null; });
+            board.MissionResumed(missionId);
             bus.Publish("user.message", missionId, data: new { text });
 
             var mission = store.FindMission(missionId)!;
@@ -260,6 +267,7 @@ public sealed partial class OfficeRuntime(
         {
             _missionRuns.TryRemove(missionId, out _);
             cts.Dispose();
+            if (store.FindMission(missionId) is { } ended) board.MissionEnded(missionId, ended.Status, ended.Error);
         }
     }
 
@@ -277,7 +285,8 @@ public sealed partial class OfficeRuntime(
     private ChatClientAgent BuildAgent(AgentProfile me, RunContext ctx, IReadOnlyList<AgentProfile> everyone, Mission mission)
     {
         var officeName = store.Read(s => s.Name);
-        var tools = new AgentToolbox(this, me, ctx, _opt, httpFactory).Build(everyone);
+        var mySkills = skills.Resolve(me.Skills);
+        var tools = new AgentToolbox(this, me, ctx, _opt, httpFactory, mySkills).Build(everyone);
         return new ChatClientAgent(clients.Get(me.Provider, me.Model), new ChatClientAgentOptions
         {
             Id = me.Id,
@@ -285,7 +294,7 @@ public sealed partial class OfficeRuntime(
             Description = me.Title,
             ChatOptions = new ChatOptions
             {
-                Instructions = Prompts.Instructions(officeName, me, everyone, mission, ctx),
+                Instructions = Prompts.Instructions(officeName, me, everyone, mission, ctx, mySkills),
                 Tools = tools,
             },
         });
@@ -573,6 +582,8 @@ public sealed partial class OfficeRuntime(
         "write_file" => "writing a file",
         "run_command" => "running a command",
         "fetch_url" => "browsing the web",
+        "use_skill" or "read_skill_file" => "reading a skill",
+        "office_board_list" or "office_board_add" or "office_board_update" => "planning on the board",
         "board_add" or "board_update" or "board_list" => "updating the board",
         _ => tool,
     };
