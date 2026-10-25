@@ -16,6 +16,9 @@ public sealed class EventBus(IHubContext<OfficeHub> hub, OfficeStore store, ILog
     /// <summary>Kinds that are too chatty to persist (the final text is persisted separately).</summary>
     private static readonly HashSet<string> Ephemeral = ["agent.delta", "agent.status", "cards.updated"];
 
+    /// <summary>Raised for every event, in-process (the Telegram bot listens here). Handlers must return quickly.</summary>
+    public event Action<OfficeEvent>? Published;
+
     public OfficeEvent Publish(string kind, string? missionId = null, string? agentId = null, object? data = null)
     {
         var evt = new OfficeEvent(Interlocked.Increment(ref _seq), DateTimeOffset.UtcNow, kind, missionId, agentId, data);
@@ -31,6 +34,9 @@ public sealed class EventBus(IHubContext<OfficeHub> hub, OfficeStore store, ILog
         // Fire-and-forget: a slow browser must never slow an agent down.
         _ = hub.Clients.All.SendAsync("event", evt).ContinueWith(
             t => log.LogDebug(t.Exception, "Broadcast failed"), TaskContinuationOptions.OnlyOnFaulted);
+
+        try { Published?.Invoke(evt); }
+        catch (Exception ex) { log.LogWarning(ex, "An event listener failed on {Kind}", kind); }
 
         return evt;
     }

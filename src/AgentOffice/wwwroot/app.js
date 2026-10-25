@@ -390,6 +390,9 @@
       case 'office.fired':
         leavePerson(e.agentId); renderKanban();
         break;
+      case 'telegram.updated':
+        if ($('#dlgTelegram').open) refreshTelegram();
+        break;
       case 'cards.updated':
         S.cards = d.cards || []; renderKanban();
         break;
@@ -1554,7 +1557,8 @@
     dlg.querySelector('#skillSave').hidden = ro;
     const used = [...S.agents.values()].filter((a) => (a.profile.skills || []).includes(s?.name)).map((a) => a.profile.name);
     host.innerHTML = `<div class="form">
-      ${ro ? `<p class="skill-note">This skill comes from <code>${esc(s.source)}</code> and is read-only here. Edit it there, or import a copy to change it in the office.</p>` : ''}
+      ${ro ? `<p class="skill-note">${s.source === 'built-in' ? 'This skill ships with Agent Office (a vetted copy of a published skill; see its source in SOURCE.md) and is read-only.' : `This skill comes from <code>${esc(s.source)}</code> and is read-only here.`}
+        <button type="button" class="linkish" data-skill-copy>Make an editable copy</button></p>` : ''}
       <label class="field"><span>Name</span><input data-skill-field="name" maxlength="64" value="${esc(s?.name || '')}" ${isNew ? '' : 'readonly'} placeholder="e.g. release-notes" pattern="[a-z0-9]+(-[a-z0-9]+)*" required>
         <small>${isNew ? 'Lowercase letters, digits and hyphens. It can\'t be changed later.' : used.length ? `Used by ${esc(used.join(', '))}.` : 'Not attached to anyone yet.'}</small></label>
       <label class="field"><span>When to use it</span><textarea data-skill-field="description" maxlength="1024" rows="3" ${ro ? 'readonly' : ''} required
@@ -1564,6 +1568,13 @@
         placeholder="Steps, checklists, templates, examples — Markdown is fine.">${esc(s?.instructions || '')}</textarea></label>
       ${s?.files?.length ? `<div class="field"><span>Bundled files</span><small>${s.files.map((f) => `<code>${esc(f)}</code>`).join(' ')}</small></div>` : ''}
     </div>`;
+    host.querySelector('[data-skill-copy]')?.addEventListener('click', async () => {
+      try {
+        const copy = await backend.post(`api/skills/${encodeURIComponent(s.name)}/copy`, {});
+        await reloadSkills(copy.name);
+        toast(`${copy.name} is now an office skill you can edit. Delete the copy to go back to the original.`);
+      } catch (e) { dlg.querySelector('.dlg-foot [data-error]').textContent = e.message; }
+    });
     if (isNew) host.querySelector('[data-skill-field="name"]').focus();
   }
 
@@ -1803,6 +1814,91 @@
     if (!existing) toast(`Added #${saved.number}.`);
   }
 
+  // ================================================================ Telegram
+  let telegram = null; // last status from the server
+  const TELEGRAM_COMMANDS = [
+    ['@Name message', 'talk to a colleague; reply to their answer to keep going'],
+    ['/mission @Name goal', 'start a mission'], ['/meeting @A @B topic', 'hold a meeting'],
+    ['/missions', 'what’s running'], ['/cancel', 'stop a mission (reply to its message)'], ['/team', 'who’s doing what'],
+    ['/board', 'the office board'], ['/card [@Name] title | details', 'add a card'], ['/go 12', 'hand card #12 to its assignee'],
+    ['/move 12 todo', 'move a card'], ['/done 12', 'accept a card'], ['/mute, /unmute', 'notifications in that chat'],
+  ];
+
+  async function openTelegram() {
+    const dlg = $('#dlgTelegram');
+    await refreshTelegram();
+    if (!dlg.open) dlg.showModal();
+  }
+
+  async function refreshTelegram() {
+    const before = telegram?.chats?.length ?? null;
+    try { telegram = await backend.get('api/telegram'); } catch (e) { telegram = { error: e.message }; }
+    if (before !== null && (telegram.chats?.length ?? 0) > before) toast('Telegram chat paired.');
+    renderTelegram();
+  }
+
+  function renderTelegram() {
+    const dlg = $('#dlgTelegram');
+    const t = telegram || {};
+    const pairing = t.pairing && new Date(t.pairing.expiresAt) > new Date() ? t.pairing : null;
+    let body;
+    if (S.demo || t.demo) {
+      body = '<p>Telegram needs the real server. Run the app with <code>dotnet run</code> and open it from there; this in-browser demo can’t talk to Telegram.</p>';
+    } else if (t.error) {
+      body = `<p class="dlg-error">${esc(t.error)}</p>`;
+    } else if (!t.configured) {
+      body = `<p>Run the office from Telegram: talk to colleagues, start missions, manage the board, and get told when work is done.
+          Nothing needs hosting. The app polls Telegram for messages, so it works from your laptop while it’s running.</p>
+        <ol class="tg-steps">
+          <li>In Telegram, open <a href="https://t.me/BotFather" target="_blank" rel="noopener">@BotFather</a>, send <code>/newbot</code> and follow the steps. It gives you a token.</li>
+          <li>In <code>src/AgentOffice</code>, store the token:
+            <div class="tg-copy"><code id="tgCmd">dotnet user-secrets set "Telegram:BotToken" "123456:ABC…"</code>
+            <button type="button" class="btn" data-tg="copy">Copy</button></div></li>
+          <li>Restart the app and come back here to pair your chat.</li>
+        </ol>`;
+    } else {
+      const chats = t.chats || [];
+      body = `<p class="tg-status ${t.problem ? 'bad' : 'ok'}">${t.problem ? esc(t.problem)
+          : t.bot ? `Connected as <a href="https://t.me/${esc(t.bot)}" target="_blank" rel="noopener">@${esc(t.bot)}</a>` : 'Connecting to Telegram…'}</p>
+        <h3 class="tg-h">Paired chats</h3>
+        ${chats.length ? `<ul class="tg-chats">${chats.map((c) => `<li><span><b>${esc(c.name)}</b><small>Paired ${esc(new Date(c.pairedAt).toLocaleDateString())}</small></span>
+            <label class="tg-notify"><input type="checkbox" data-tg-mute="${c.id}" ${c.muted ? '' : 'checked'}> Notifications</label>
+            <button type="button" class="btn danger" data-tg-unpair="${c.id}">Remove</button></li>`).join('')}</ul>`
+          : '<p class="skill-none">No chats yet. Only paired chats can use the bot; everyone else is turned away.</p>'}
+        ${pairing ? `<div class="tg-pair">
+            <p>Open the bot and press <b>Start</b>, or send it this code. It works once, for 10 minutes.</p>
+            <div class="tg-code">${esc(pairing.code)}</div>
+            ${pairing.link ? `<a class="btn primary" href="${esc(pairing.link)}" target="_blank" rel="noopener">Open @${esc(t.bot)} in Telegram</a>` : ''}
+            <small>or send <code>/pair ${esc(pairing.code)}</code></small></div>`
+          : `<button type="button" class="btn primary" data-tg="pair" ${t.bot ? '' : 'disabled'}>Pair a chat</button>`}
+        <details class="tg-help"><summary>What you can say to the bot</summary>
+          <dl>${TELEGRAM_COMMANDS.map(([c, d]) => `<dt><code>${esc(c)}</code></dt><dd>${esc(d)}</dd>`).join('')}</dl></details>`;
+    }
+    dlg.innerHTML = `<div class="dlg">
+      <div class="dlg-head"><h2 id="telegramTitle">Telegram</h2><button type="button" class="btn ghost close" data-action="close-dialog" aria-label="Close">✕</button></div>
+      <div class="dlg-body tg-body">${body}</div>
+      <div class="dlg-foot"><span class="dlg-error" data-error></span><button type="button" class="btn" data-action="close-dialog">Close</button></div>
+    </div>`;
+    const err = (m) => { dlg.querySelector('[data-error]').textContent = m; };
+    dlg.querySelector('[data-tg="copy"]')?.addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText($('#tgCmd').textContent); toast('Copied. Replace the example token with yours.'); } catch { err('Couldn’t copy; select the command instead.'); }
+    });
+    dlg.querySelector('[data-tg="pair"]')?.addEventListener('click', async () => {
+      try { telegram = await backend.post('api/telegram/pair', {}); renderTelegram(); } catch (e) { err(e.message); }
+    });
+    dlg.querySelectorAll('[data-tg-mute]').forEach((box) => box.addEventListener('change', async () => {
+      try { telegram = await backend.put(`api/telegram/chats/${box.dataset.tgMute}`, { muted: !box.checked }); renderTelegram(); } catch (e) { err(e.message); }
+    }));
+    dlg.querySelectorAll('[data-tg-unpair]').forEach((btn) => btn.addEventListener('click', async () => {
+      if (btn.dataset.armed !== '1') {
+        btn.dataset.armed = '1'; btn.textContent = 'Yes, remove';
+        setTimeout(() => { if (btn.isConnected) { btn.dataset.armed = ''; btn.textContent = 'Remove'; } }, 4000);
+        return;
+      }
+      try { await backend.del(`api/telegram/chats/${btn.dataset.tgUnpair}`); await refreshTelegram(); } catch (e) { err(e.message); }
+    }));
+  }
+
   // ================================================================ mission dialog
   let missionDraft = null;
   function openNewMission() {
@@ -1892,6 +1988,7 @@
     $('#btnHire').onclick = openHire;
     $('#btnNewMission').onclick = openNewMission;
     $('#btnBoard').onclick = () => setBoardOpen(!S.boardOpen);
+    $('#btnTelegram').onclick = openTelegram;
     $('#btnMissions').onclick = () => (S.drawer === 'missions' ? closeDrawer() : openMissions());
     $('#officeName').onclick = () => {
       // Inline rename: swap the title for an input; Enter or blur saves, Escape cancels.

@@ -1,0 +1,13 @@
+# Source
+- Upstream: https://github.com/anthropics/knowledge-work-plugins
+- Path: operations/skills/status-report
+- Commit: 33d3dea41a341b341d4f5da2e8801ae0c89be2b8
+- Retrieved: 2026-10-25
+- License: Apache-2.0 (copied to LICENSE; repo-level license, no NOTICE file upstream)
+- Changes for Agent Office:
+  - Frontmatter flattened; `argument-hint` removed; `license: Apache-2.0` added; description names the done / in progress / blocked / needs decision states.
+  - Removed the CONNECTORS.md pointer and the `/status-report $ARGUMENTS` usage block; title de-slashed.
+  - "If Connectors Available" (`~~project tracker`, `~~chat`, `~~calendar`) replaced by "Gather the Facts First": read the mission board (board_list), office board (office_board_list) and workspace files, with a table mapping board states to report sections.
+  - Added an explicit **Blocked** section (item, owner, blocked on, since, what unblocks it, who can unblock); "Accomplishments" renamed "Done This Period"; In Progress status values aligned with board states.
+  - Added guidance to write "None" for empty Blocked/Decisions sections, plus tips 4 (actionable blockers) and 5 (don't invent status).
+  - Audience reframed as the owner or stakeholders; risk-assessment reference kept as the bundled skill name.

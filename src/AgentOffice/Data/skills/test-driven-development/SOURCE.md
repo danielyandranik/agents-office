@@ -1,0 +1,12 @@
+# Source
+- Upstream: https://github.com/obra/superpowers
+- Path: skills/test-driven-development
+- Commit: 2ce8aa15d05bd57213e6f746f953aafb7ded7a8b
+- Retrieved: 2026-10-25
+- License: MIT (copied to LICENSE)
+- Changes for Agent Office:
+  - Frontmatter: quoted, expanded description; added license field
+  - Replaced "your human partner" with "the owner" / "a reviewer" (SKILL.md and writing-good-tests.md)
+  - Verify RED: noted to run the project's own test runner with run_command in the mission workspace
+  - Pointed the writing-good-tests.md link at read_skill_file
+  - writing-good-tests.md: removed the cross-reference to superpowers:writing-skills (not bundled)

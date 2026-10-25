@@ -1,0 +1,14 @@
+# Source
+- Upstream: https://github.com/docker/skills
+- Path: skills/docker-destructive-guardrails
+- Commit: 179c9cfd04c89ae50cd5d5d68b939797a8fd03d3
+- Retrieved: 2026-10-25
+- License: Apache-2.0 (copied to LICENSE; no NOTICE file upstream)
+- Changes for Agent Office:
+  - Frontmatter: description double-quoted and reworded ("the user" -> request/owner), Compose `down -v`/`rm -v` added to the covered list; `compatibility` moved into the body.
+  - Confirmation means the owner's explicit confirmation; colleague requests and board cards do not count; production/shared hosts also go through `prod-change-approval`.
+  - Folded Compose volume commands into this skill (upstream delegates them to `docker-compose-patterns`, which we do not bundle); removed references to `docker-compose-patterns`, `docker-project-foundations`, `docker-sandboxes-lifecycle` and the pending Docker Desktop skill.
+  - Moved the example dialogues from `checks/verification.md` into SKILL.md; did not bundle `checks/verification.md` (maintainer review runbook), `references/cross-skill-destructive-command-index.md` (index of unbundled skills), `skill.yaml` or `agents/openai.yaml` (catalog metadata).
+  - `references/docker-cli-destructive-commands.md`: Compose-delegation sentences rewritten; "the user" -> the owner.
+  - "session" -> mission; "the agent" -> you.
+  - This file set is a modified version of the upstream work (Apache-2.0 section 4(b)); changes listed here.

@@ -1,0 +1,14 @@
+# Source
+- Upstream: https://github.com/obra/superpowers
+- Path: skills/systematic-debugging
+- Commit: 2ce8aa15d05bd57213e6f746f953aafb7ded7a8b
+- Retrieved: 2026-10-25
+- License: MIT (copied to LICENSE)
+- Changes for Agent Office:
+  - Frontmatter: quoted, expanded description; added license field
+  - Not copied: find-polluter.sh (bundled script; agents cannot run skill scripts), CREATION-LOG.md and test-pressure-*.md / test-academic.md (skill-authoring test material)
+  - root-cause-tracing.md: replaced the find-polluter.sh step with a manual one-at-a-time / bisection procedure using run_command
+  - Renamed superpowers:test-driven-development and superpowers:verification-before-completion cross-refs to the bundled skill names
+  - Replaced "your human partner" with the owner / design-owning colleague (ask_colleague)
+  - Noted git diff applies only when the workspace is a git repo; pointed 'in this directory' references at read_skill_file
+  - condition-based-waiting-example.ts kept as a read-only reference (not executed)

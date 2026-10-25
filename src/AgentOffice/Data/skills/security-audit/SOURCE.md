@@ -1,0 +1,22 @@
+# Source
+- Upstream: https://github.com/cloudflare/security-audit-skill
+- Path: skills/security-audit
+- Commit: c1c8a8c1471069fb0e188eeaff69b8e8db6564a8
+- Retrieved: 2026-10-25
+- License: MIT (copied to LICENSE)
+- Changes for Agent Office:
+  - Guidance mode only: removed "Full audit mode", "Full audit setup", "Write isolation", "Full audit planning" (coverage ledger, prior runs, run profiles, cost budget) and "Full audit workflow" from SKILL.md.
+  - Removed "Platform terminology" (parent / Task tool / research and general subagents); our agents have no subagents.
+  - Replaced the OS-enforced sandbox and artifact-promotion requirements with Agent Office local validation boundaries (mission workspace only, offline, dummy data, no installs, no network); if a check cannot stay within them, the finding becomes needs_validation.
+  - Did not copy validate-findings.cjs, validate-coverage-ledger.cjs, their .test.cjs files, or report-schema.json (full-mode only; agents cannot execute bundled scripts).
+  - Rewrote the description: no complete/full workflow offered; states read-only, verdicts and severity scale.
+  - Mapped severity: critical→BLOCKER, high→MAJOR, medium→MINOR, low→NIT, informational→NIT (labelled informational).
+  - Added a short workflow (reconnaissance, hunting, refutation, report) and a companion-file table to SKILL.md.
+  - Added tool framing (list_files, read_file, run_command in the mission workspace; git only if the workspace is a repo) and the read-only reviewer rule (describe fixes, never patch).
+  - Added: cite hardcoded secrets by file and line, never reproduce their values (SKILL.md and ATTACK-CLASSES.md "Obvious things").
+  - Anti-patterns: dropped the hunter-result, carried-prior-record and JSON/prose items; reworded "report before verification"; added "writing patches".
+  - RECONNAISSANCE.md: converted the four parallel research-agent prompts into four maps the agent builds itself; removed run-metadata, prior-run input, the deterministic coverage ledger, coverage_id derivation and validator steps; replaced with plain coverage notes.
+  - HUNTING.md: kept the core hunting method, candidate gate and local validation boundaries; removed wave assignment, hunter prompt assembly, artifact promotion procedure, structured JSON result, parent consolidation and coverage-critic waves.
+  - VALIDATION-AND-REPORTING.md: turned the independent-verifier prompt into a self-refutation pass; replaced schema/JSON output and validators with prose record contents; folded REPORT.md / FINDINGS-DETAIL.md / NEEDS-VALIDATION.md into one report format using BLOCKER/MAJOR/MINOR/NIT; added optional ask_colleague second read and a pointer to the bundled security-verdict skill.
+  - Companion domain files: removed "(subagent_type: `general`)" from headings, retitled "Core discipline (include in every agent prompt for this domain)" to "(apply to every candidate in this domain)", "Phase 1" to "reconnaissance"; ATTACK-CLASSES.md reworded "separate agents"/"this agent" to passes and gated the git-history check on the workspace being a repo. Substance otherwise unchanged.
+  - Did not copy the repo README.md (install instructions only).

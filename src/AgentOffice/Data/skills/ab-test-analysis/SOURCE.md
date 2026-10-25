@@ -1,0 +1,12 @@
+# Source
+- Upstream: https://github.com/phuryn/pm-skills
+- Path: pm-data-analytics/skills/ab-test-analysis
+- Commit: 07b34f64ee828df08953f505b7f747aef85ae7c6
+- Retrieved: 2026-10-25
+- License: MIT (copied to LICENSE)
+- Changes for Agent Office:
+  - Frontmatter: added `license: MIT`.
+  - Replaced the `$ARGUMENTS` placeholder with "the experiment named by whoever asked"; "the user" -> owner/colleague; scripts need run_command + Python, with a fallback when absent.
+  - Fixed the sample-size formula to include the power term (Z_β = 0.84 for 80% power); upstream formula omitted it while flagging <80% power. Added an SRM test hint.
+  - Recommendation framed as advice; the ship decision is the owner's. Summary saved to the workspace; pointer to `statistical-analysis`.
+  - Removed the "Further Reading" links to the author's newsletter (external links, not needed by the skill).

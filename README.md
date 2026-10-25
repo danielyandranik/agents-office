@@ -65,6 +65,23 @@ Or set it per colleague in the hire/profile form. Providers, all configured unde
 
 Mixing is fine: a cheap model for coordination, a strong one for review.
 
+### Run it from Telegram
+
+The office can be driven from a Telegram chat: talk to colleagues, start missions and meetings,
+manage the board, and get a message when work is done, needs review or gets blocked. Nothing needs
+hosting. The app long-polls Telegram, so it only makes outgoing requests and works from your laptop
+while it's running.
+
+1. In Telegram, open [@BotFather](https://t.me/BotFather), send `/newbot`, and copy the token.
+2. Store it: `dotnet user-secrets set "Telegram:BotToken" "123456:ABC…"`, then restart the app.
+3. Click the paper-plane button in the top bar, **Pair a chat**, and open the bot from there (or send it
+   `/pair <code>`). Codes work once, for 10 minutes; only paired private chats are answered.
+
+In the chat, `@Nora …` talks to a colleague; replying to any of the bot's messages continues that
+conversation or mission. `/help` lists the rest: `/mission @Name goal`, `/meeting @A @B topic`,
+`/missions`, `/cancel`, `/team`, `/board`, `/card`, `/go 12`, `/move 12 review`, `/done 12`, `/mute`.
+Messages pass through Telegram's servers, so treat them as you would any chat.
+
 ### Let the team work on your code
 
 Missions run inside a work folder. By default each mission gets a fresh folder under
@@ -111,8 +128,19 @@ write, edit and delete skills, or import a `SKILL.md`. They're stored in `office
 Folders in `Office:SkillDirs` (default `~/.claude/skills`) show up read-only, so your Claude Code skills
 work here too.
 
+Every built-in role comes with skills: 56 ship with the app in `src/AgentOffice/Data/skills/`. 44 are vetted
+copies of published skills (obra/superpowers, addyosmani, Anthropic's knowledge-work-plugins, Sentry, Trail of
+Bits, Cloudflare, Docker, Microsoft and others), pinned to a commit, adapted to run as instructions only, and
+kept with their license and a `SOURCE.md` of what changed; 12 are house skills for gaps nobody had filled (for
+example `ac-test-plan`, `work-handoff-brief`, `prod-change-approval`, `security-verdict`). The full list with
+sources, licenses and roles is in [`Data/skills/README.md`](src/AgentOffice/Data/skills/README.md). Built-in
+skills are read-only; **Make an editable copy** turns one into an office skill you can change (delete the copy
+to go back).
+
 A colleague's instructions list only each skill's name and description. When the work calls for one, they
 load it with `use_skill` and read its bundled files with `read_skill_file`, so unused skills cost almost nothing.
+When one of their skills points to another ("use the `verification-before-completion` skill"), they can load that
+one from the library by name too.
 
 **The office board.** **Board** in the top bar opens a kanban of the team's work: Backlog, To do,
 In progress, Review and Done. Cards have a number (#12), priority, story points, an assignee and a
@@ -172,8 +200,9 @@ src/AgentOffice/
   Data/roles.json            built-in role templates (yours are saved in office.json)
   wwwroot/                   the office UI (vanilla JS, no build step)
     demo.js                  in-browser stand-in for the server (?demo or no API)
-tools/sync-demo.mjs          copies roles.json into demo.js; --bundle makes a single-file preview
+tools/sync-demo.mjs          copies roles.json and built-in skills into demo.js; --bundle makes a single-file preview
 tools/textures.py            regenerates the floor's material textures (brick, wood, concrete) in styles.css
+tools/skills-manifest.py     regenerates Data/skills/README.md (built-in skills: source, license, commit, roles)
 ```
 
 State lives in `src/AgentOffice/office-data/`: `office.json` and one event log per mission. Delete
@@ -201,6 +230,10 @@ the folder to start fresh.
 | POST   | `/api/cards/{id}/move`        | Move to a column / position: `{ status, beforeId }`  |
 | POST   | `/api/cards/{id}/start`       | Hand the card to its assignee as a mission           |
 | DELETE | `/api/cards/{id}`             | Delete a card                                        |
+| GET    | `/api/telegram`               | Bot status, paired chats, current pairing code       |
+| POST   | `/api/telegram/pair`          | New one-time pairing code (10 minutes)               |
+| PUT    | `/api/telegram/chats/{id}`    | `{ muted }`: office notifications on or off for a chat |
+| DELETE | `/api/telegram/chats/{id}`    | Unpair a chat                                        |
 | GET    | `/api/skills`                 | Skill library: office skills plus read-only ones from `Office:SkillDirs` |
 | POST   | `/api/skills`                 | New skill: `{ name, description, instructions }` |
 | PUT    | `/api/skills/{name}`          | Edit an office skill's description and instructions |
@@ -210,7 +243,7 @@ the folder to start fresh.
 SignalR hub `/hub` pushes `event` messages `{ seq, ts, kind, missionId, agentId, data }`. Kinds
 include `agent.status`, `agent.delta`, `agent.said`, `agent.tool`, `agent.tool_result`,
 `agent.visit`, `agent.return`, `board.updated`, `workspace.file`, `mission.*`, `meeting.*` and
-`office.*`, `roles.updated`, `skills.updated` and `cards.updated`.
+`office.*`, `roles.updated`, `skills.updated`, `cards.updated` and `telegram.updated`.
 
 ## Where to take it next
 

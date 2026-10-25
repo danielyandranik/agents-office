@@ -1,0 +1,17 @@
+# Source
+- Upstream: https://github.com/antonbabenko/terraform-skill
+- Path: skills/terraform-skill
+- Commit: 9c1e92d962a5407c227e5566416e962a2f057240
+- Retrieved: 2026-10-25
+- License: Apache-2.0 (copied to LICENSE; verified: the file is Copyright 2026 Anton Babenko plus the full Apache License 2.0 text; GitHub shows NOASSERTION only because of the header; no NOTICE file upstream)
+- Changes for Agent Office:
+  - Vendored upstream version 1.17.2 (from frontmatter `metadata.version`).
+  - Frontmatter flattened (removed nested `metadata` block); description double-quoted and notes terraform/tofu is required for validation.
+  - Added "In Agent Office: requirements and safety": terraform/tofu needed in the workspace; safe vs ask-first vs approval-required commands; state-mutating and apply/destroy commands go through `prod-change-approval`; no `-auto-approve`; never expose secrets/state.
+  - "the user" -> the owner; "Claude" -> neutral wording; approvals are the owner's explicit approval.
+  - Replaced the "Code Intelligence (terraform-ls)" section with "Navigation and Renames" (text search + moved blocks); dropped `references/code-intelligence-lsp.md` (requires an LSP tool and Claude Code plugin installation, which our agents do not have).
+  - Native-test schema check: replaced Terraform MCP calls with `terraform providers schema -json` or registry docs (SKILL.md and `references/testing-frameworks.md`); added a cost/safety note on `command = apply` tests.
+  - `references/security-compliance.md`: removed the `curl ... install.sh | sh` Trivy install line; pinned trivy-action to a placeholder commit SHA instead of `@master`.
+  - `references/quick-reference.md` and `references/state-management.md`: added an approval banner; Safe Destroy Protocol confirmation is the owner's. `references/module-patterns.md`: "ask the user" -> "ask the owner".
+  - Not bundled: repo-level `mcp.json` (Terraform MCP server via docker), CLAUDE.md, POWER.md, tests. Other references copied unchanged.
+  - This file set is a modified version of the upstream work (Apache-2.0 section 4(b)); changes listed here.

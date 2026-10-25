@@ -1,0 +1,16 @@
+# Source
+- Upstream: https://github.com/product-on-purpose/pm-skills
+- Path: skills/define-prioritization-framework (skill version 1.3.0)
+- Commit: f943d9589bfe9db06fac2641f9740987ff9b3aee
+- Retrieved: 2026-10-25
+- License: Apache-2.0 (copied to LICENSE; repo-level license, no NOTICE file upstream)
+- Bundled: SKILL.md, references/TEMPLATE.md, references/EXAMPLE.md (HISTORY.md, evals/ and library/skill-output-samples not bundled)
+- Changes for Agent Office:
+  - Frontmatter flattened (nested `metadata:` block removed); "Use when ..." added to the description.
+  - HTML attribution comment removed (visible attribution line at the end); HTML guidance comments in references/TEMPLATE.md and references/EXAMPLE.md converted to visible blockquotes.
+  - Identity: "Read-only tools (Read, Grep)" replaced by our tools (read_file, office_board_list, board_list); states that it recommends an order and does not move board cards.
+  - "When NOT to Use" routing edited: unbundled targets (define-opportunity-tree, define-hypothesis, measure-experiment-design, discover-market-sizing, deliver-launch-checklist, discover-interview-synthesis, foundation-prioritized-action-plan) replaced by bundled skills (foundation-build-risk-review, sprint-planning) or inline guidance.
+  - Inputs: office board backlog, pasted lists or files exported from any tracker (Linear, Jira, Notion, spreadsheet) are optional inputs; none of those tools is required. (No Linear/Notion mention existed in this version; the line was added to make that explicit.)
+  - Kano refusal and adequacy notes: pointers to discover-interview-synthesis / measure-survey-analysis replaced by plain-language guidance with the same thresholds.
+  - RICE Effort points to estimate-with-uncertainty; cross-skill composition rewritten with bundled skills; utility-pm-critic replaced by asking a colleague to challenge the inputs; library samples reference removed.
+  - "user" (the requester) -> "whoever asked".

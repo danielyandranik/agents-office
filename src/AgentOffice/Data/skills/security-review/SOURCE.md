@@ -1,0 +1,22 @@
+# Source
+- Upstream: https://github.com/getsentry/skills
+- Path: skills/security-review
+- Commit: d12f250460ffd961f549dbebf7eeb0cf4afd4c2e
+- Retrieved: 2026-10-25
+- License: Apache-2.0 AND CC-BY-SA-4.0 (copied to LICENSE and LICENSE-CC-BY-SA)
+  - SKILL.md is Apache-2.0 (getsentry/skills repo LICENSE, copied verbatim to `LICENSE`; the repo has no NOTICE file). It is a modified version; changes are listed below.
+  - The files under `references/`, `languages/` and `infrastructure/` are derived from the OWASP Cheat Sheet Series under CC BY-SA 4.0 (upstream skill-folder LICENSE copied verbatim to `LICENSE-CC-BY-SA`). Our adapted versions of these files remain licensed CC BY-SA 4.0, with attribution to the OWASP Foundation and getsentry/skills.
+- Changes for Agent Office:
+  - SKILL.md frontmatter: removed `allowed-tools` (listed Task/subagents); set `license: Apache-2.0 AND CC-BY-SA-4.0` (upstream pointed at the LICENSE file); description double-quoted and extended with "read-only", office severities and "never patches".
+  - SKILL.md: replaced the HTML-comment OWASP attribution after the frontmatter with a visible attribution note.
+  - SKILL.md: added "Ground Rules in This Office" (read-only, no patches; list_files/read_file/run_command inside the mission workspace; static review only, no exploits/scanners/installs/downloads; redact secrets).
+  - SKILL.md: "provided by the user" reframed as "given to you by whoever asked".
+  - SKILL.md: severity scale mapped Critical->BLOCKER, High->MAJOR, Medium->MINOR, Low->NIT in the Severity Classification table, Quick Patterns headings and Output Format; added a note that confidence and severity are separate, and that NIT items are normally not reported.
+  - SKILL.md: removed references to unbundled skills `django-access-review` and `gha-security-review` (kept their documented fallbacks to `references/authorization.md` and `references/supply-chain.md`).
+  - SKILL.md: added pointers to bundled skills `dependency-review` (running installed audit tools) and `security-verdict` (combining findings into a ship decision); neither is mandatory.
+  - SKILL.md: routing tables and reference index now use full bundled paths (e.g. `references/xss.md`) and say to read them with `read_skill_file`.
+  - SKILL.md output format: "Fix" renamed "Remediation" as guidance for the code owner, not applied by the reviewer; evidence snippets must redact secrets; report returned to whoever asked.
+  - Each file under `references/`, `languages/`, `infrastructure/`: prepended a one-line OWASP CC BY-SA 4.0 attribution and adaptation notice pointing to `../LICENSE-CC-BY-SA`.
+  - `languages/python.md`, `languages/javascript.md`, `infrastructure/docker.md`: severity labels in code comments mapped Critical->BLOCKER ("FLAG: Critical", "Always Critical", "CRITICAL: Docker socket mount"). Non-severity uses of the word "critical" left unchanged.
+  - Omitted `SPEC.md` (maintainer documentation: intent, validation via the upstream repo's `quick_validate.py`, maintenance notes; not needed by the agent at runtime).
+  - Reference file content otherwise unchanged. Attack samples in them (e.g. malicious install scripts in supply-chain.md, prompt-injection strings in modern-threats.md, SSRF/XXE payloads) are examples of what to detect and are framed as such.

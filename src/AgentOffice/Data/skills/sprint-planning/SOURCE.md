@@ -1,0 +1,14 @@
+# Source
+- Upstream: https://github.com/anthropics/knowledge-work-plugins
+- Path: product-management/skills/sprint-planning
+- Commit: 33d3dea41a341b341d4f5da2e8801ae0c89be2b8
+- Retrieved: 2026-10-25
+- License: Apache-2.0 (copied to LICENSE; repo-level license, no NOTICE file upstream)
+- Changes for Agent Office:
+  - Frontmatter flattened; `argument-hint` removed; `license: Apache-2.0` added; description mentions putting the plan on the office board.
+  - Removed the CONNECTORS.md pointer and the `/sprint-planning $ARGUMENTS` usage block; title de-slashed.
+  - "SUPERCHARGED (project tracker / calendar / chat)" box replaced by an office-board box (office_board_list/add/update).
+  - Inputs reworded for colleagues and board carryover (PTO/meetings and "engineers" generalised to colleagues' availability and names/roles).
+  - Definition of Done rewritten for general office tasks (deliverable linked from its card, meets acceptance criteria, reviewed by someone else, changes written up, accepted by the owner/requester; only the card owner moves to done), with a note on adding code/doc/decision-specific items.
+  - Added "Putting the Plan on the Office Board" section: match cards, add missing ones to backlog, move committed P0/P1 backlog -> todo with owner and points, leave stretch in backlog, never move to done, report back.
+  - Added pointers to bundled estimate-with-uncertainty and work-handoff-brief.

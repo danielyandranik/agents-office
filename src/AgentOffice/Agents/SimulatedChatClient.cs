@@ -127,7 +127,7 @@ public sealed partial class SimulatedChatClient : IChatClient
     [GeneratedRegex(@"You are ([^,\n]+),")]
     private static partial Regex NameRegex();
 
-    [GeneratedRegex(@"Skills: ([^.\n]+)")]
+    [GeneratedRegex(@"your skills: ([^.\n]+)")]
     private static partial Regex SkillsRegex();
 
     [GeneratedRegex(@"Colleagues: ([^.\n]+)")]

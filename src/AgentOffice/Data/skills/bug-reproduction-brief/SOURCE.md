@@ -1,0 +1,14 @@
+# Source
+- Upstream: https://github.com/github/awesome-copilot
+- Path: skills/bug-reproduction-brief
+- Commit: d85f762d6e521abf5fe16703946e9b38adc42da7
+- Retrieved: 2026-10-25
+- License: MIT (copied to LICENSE; repo-root license, Copyright GitHub, Inc.)
+- Original upstream (awesome-copilot's version is adapted from it): https://github.com/skyestrela/ai-agent-skill-preview, path bug-reproduction-brief, commit c8074b416a216ec6e47a2f34135ae3827c32b02b, MIT (Copyright (c) 2026 AI Agent Skills Pack). Its licence notice is also included in LICENSE.
+- Changes for Agent Office:
+  - Added `license: MIT` to frontmatter (upstream SKILL.md had none) and expanded the description with when-to-use wording.
+  - Added a paragraph on working from the workspace/board/owner input and what to record when there is no shell.
+  - Repository and commit made conditional on the workspace being a git repository; fixtures/scripts go in the mission workspace.
+  - Step 5 points to the bundled `flaky-test-triage` skill for intermittent failures; safety boundaries point to `systematic-debugging` for the separate diagnosis workflow.
+  - Added a pointer to the bundled `bug-report-severity` skill, which adds the severity field this brief lacks.
+  - "Example prompt" renamed "Example request"; source-and-licence section now names both upstreams.

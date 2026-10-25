@@ -1,0 +1,15 @@
+# Source
+- Upstream: https://github.com/anthropics/skills
+- Path: skills/frontend-design
+- Commit: dbd4588f9e1033efb41dad4bef2f7947c8993d44
+- Retrieved: 2026-10-25
+- License: Apache-2.0 (skills/frontend-design/LICENSE.txt copied to LICENSE; no NOTICE file in the folder or repo)
+- Changes for Agent Office:
+  - Frontmatter: quoted description, rewritten to mention product UI vs new pages; license field set to Apache-2.0 (upstream: "Complete terms in LICENSE.txt")
+  - Added a top section: in product UI, reuse the product's existing patterns and components before inventing new ones; the push for originality applies to new marketing/landing pages only
+  - "confirm with the client" changed to "confirm with the owner or whoever asked"
+  - Replaced "information in your memory about the client's preferences" with what the owner, mission brief, or colleagues have said
+  - Replaced "taking screenshots to review if your environment supports it" with re-reading HTML/CSS against the plan and asking the QA Engineer for screenshots (the Product Designer has no shell or browser)
+  - Notes on what was tried are kept in the mission workspace
+  - Design plan note: in product UI, start from the product's existing tokens and components
+  - Added a modification notice at the end of SKILL.md (Apache-2.0 section 4(b))

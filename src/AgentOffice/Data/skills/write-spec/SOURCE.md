@@ -1,0 +1,14 @@
+# Source
+- Upstream: https://github.com/anthropics/knowledge-work-plugins
+- Path: product-management/skills/write-spec
+- Commit: 33d3dea41a341b341d4f5da2e8801ae0c89be2b8
+- Retrieved: 2026-10-25
+- License: Apache-2.0 (copied to LICENSE; repo-level license, no NOTICE file upstream)
+- Changes for Agent Office:
+  - Frontmatter flattened; `argument-hint` removed; `license: Apache-2.0` added.
+  - Removed the CONNECTORS.md pointer and the `/write-spec $ARGUMENTS` usage block.
+  - Step 3 rewritten: the `~~project tracker` / `~~knowledge base` / `~~design` connector branches replaced by workspace files (list_files/read_file), the mission and office boards (board_list/office_board_list) and fetch_url where the role has it.
+  - "the user" reframed as "whoever asked (the owner or a colleague)"; added a fallback for working from a board task without someone to ask.
+  - Added: save the PRD with write_file when possible.
+  - Follow-up artifacts now point to bundled skills (deliver-acceptance-criteria, deliver-edge-cases, sprint-planning, work-handoff-brief); Acceptance Criteria section points to deliver-acceptance-criteria and deliver-edge-cases.
+  - Open Questions may be tagged with a named colleague or the owner.

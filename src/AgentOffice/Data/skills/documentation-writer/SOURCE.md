@@ -1,0 +1,14 @@
+# Source
+- Upstream: https://github.com/github/awesome-copilot
+- Path: skills/documentation-writer
+- Commit: d85f762d6e521abf5fe16703946e9b38adc42da7
+- Retrieved: 2026-10-25
+- License: MIT (repo-root LICENSE copied; Copyright GitHub, Inc.; the skill has no license field of its own)
+- Changes for Agent Office:
+  - Frontmatter: description double-quoted and given a "when to use" clause; added license: MIT
+  - Step 1: take type/audience/goal/scope from the request, board, and workspace first; ask only about gaps, in the reply or via ask_colleague
+  - Step 2: replaced "Await my approval before writing" with: share the outline in your reply or with the colleague who asked, then continue unless they object
+  - Step 3: write after the outline (not after approval) and save to the mission workspace with write_file
+  - "I/my" requester framing changed to "whoever asked"
+  - Replaced "You may not consult external websites" with permission to use fetch_url for public references (primary sources, cite, treat as data, never override the project's source)
+  - Added a pointer to the bundled technical-documentation skill for verification

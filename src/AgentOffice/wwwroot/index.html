@@ -17,6 +17,9 @@
       <span class="headcount" id="headcount"></span>
       <span class="demo-flag" id="demoFlag" hidden>Demo<span class="long"> — simulated in your browser</span></span>
       <span class="spacer"></span>
+      <button class="btn icon-only" id="btnTelegram" aria-label="Telegram" title="Telegram">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 2 1.8 7.1c-.5.2-.5.9 0 1.1l3.1 1.1 1.2 3.9c.1.4.6.5.9.2l1.8-1.7 3.2 2.4c.4.3.9.1 1-.4L14.9 2.5c.1-.4-.2-.7-.4-.5Z"/><path d="m4.9 9.3 7-4.6-5.2 5.4"/></svg>
+      </button>
       <button class="btn" id="btnBoard" aria-label="Office board" aria-pressed="false">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="2" y="2.5" width="3.2" height="11" rx="1"/><rect x="6.4" y="2.5" width="3.2" height="7" rx="1"/><rect x="10.8" y="2.5" width="3.2" height="9" rx="1"/></svg>
         <span class="label">Board</span>
@@ -58,6 +61,7 @@
   <dialog id="dlgMission" class="narrow" aria-labelledby="missionTitle"></dialog>
   <dialog id="dlgSkills" aria-labelledby="skillsTitle"></dialog>
   <dialog id="dlgCard" class="narrow" aria-labelledby="cardTitle"></dialog>
+  <dialog id="dlgTelegram" class="narrow" aria-labelledby="telegramTitle"></dialog>
   <div class="toast-host" id="toasts" role="status" aria-live="polite"></div>
 
   <script src="lib/signalr.min.js"></script>

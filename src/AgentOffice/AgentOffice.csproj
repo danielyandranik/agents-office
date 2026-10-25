@@ -21,6 +21,8 @@
   <ItemGroup>
     <Content Remove="Data\roles.json" />
     <Content Include="Data\roles.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Remove="Data\skills\**" />
+    <Content Include="Data\skills\**" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <Content Remove="office-data\**" />
   </ItemGroup>
 

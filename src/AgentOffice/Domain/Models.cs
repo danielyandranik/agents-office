@@ -104,6 +104,17 @@ public sealed class OfficeState
     /// <summary>The office board: work items across all missions.</summary>
     public List<BoardCard> Cards { get; set; } = [];
     public int NextCardNumber { get; set; } = 1;
+    /// <summary>Telegram chats the owner paired with the office bot. Nobody else can use it.</summary>
+    public List<TelegramChat> TelegramChats { get; set; } = [];
+}
+
+public sealed class TelegramChat
+{
+    public long Id { get; set; }
+    public string Name { get; set; } = "";
+    /// <summary>Muted chats still get answers to their own requests, just no office notifications.</summary>
+    public bool Muted { get; set; }
+    public DateTimeOffset PairedAt { get; set; } = DateTimeOffset.UtcNow;
 }
 
 public static class CardStatus

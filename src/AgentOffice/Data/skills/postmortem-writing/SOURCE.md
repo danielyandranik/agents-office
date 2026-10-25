@@ -1,0 +1,12 @@
+# Source
+- Upstream: https://github.com/wshobson/agents
+- Path: plugins/incident-response/skills/postmortem-writing
+- Commit: 0874a27b17a22e2b7c2e2bcd725768e0803cad06
+- Retrieved: 2026-10-25
+- License: MIT (copied to LICENSE)
+- Changes for Agent Office:
+  - Frontmatter: description double-quoted; added `license: MIT`.
+  - Added an "In Agent Office" section: evidence-based timeline, write to the workspace, blameless toward colleagues, action items as board cards, meeting material is for the owner.
+  - "Track in ticketing system" -> "Track on the board"; pointer to Template 1 in references.
+  - `references/details.md`: repaired the broken nested code fence in Template 1 (outer fence now four backticks); content unchanged.
+  - Community guidance, not vendor-validated.

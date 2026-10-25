@@ -1,0 +1,17 @@
+# Source
+- Upstream: https://github.com/anivar/developer-docs-framework
+- Path: SKILL.md (repo root), references/, references/styles/, rules/
+- Commit: c0e9445fcdf832681db78eaca58cdcefccd1e654
+- Retrieved: 2026-10-25
+- License: MIT (LICENSE copied verbatim, including its attribution notice for Diataxis, Google OpenDocs, Good Docs Project, Google style guide, Stripe, and Canonical; GitHub's API reports NOASSERTION because of that notice)
+- Not copied: AGENTS.md (a 2,646-line compiled copy of SKILL.md plus rules), README.md, .github/FUNDING.yml
+- Changes for Agent Office:
+  - Frontmatter flattened (removed metadata, user-invocable, agentic, compatibility), description quoted and shortened; license MIT
+  - Writing style system: Google is the default pack; load exactly one pack per task (project style guide wins; owner can name another); the chosen pack wins over the per-quadrant baseline and the style-tone-matches-type rule; say which pack was used
+  - Reference table reordered so google.md is the default pack and diataxis.md the baseline
+  - "How to Use": read files with read_skill_file, load only what is needed; CI/test/link-check rules translated to source verification, colleague runs, and recommendations (no shell)
+  - Removed the generic "Ecosystem" companion-skills table and the AGENTS.md pointer; replaced with bundled skills (technical-documentation, documentation-writer, release-notes-from-board, humanizer, documentation-and-adrs) and BLOCKER/MAJOR/MINOR/NIT for audit findings
+  - Opening "source of truth" paragraph: project style guides and verified source behavior still come first
+  - references/templates.md: delete the guidance comments from finished documents
+  - All six style packs bundled unchanged; all 27 rule files and the other references unchanged
+- Vetting: all files read in full. HTML comments appear only in references/templates.md as visible authoring guidance inside template code blocks (no hidden instructions). A curl example in rules/partner-both-sides.md is sample documentation content, not an instruction to run. No scripts, encoded blobs, or odd Unicode.

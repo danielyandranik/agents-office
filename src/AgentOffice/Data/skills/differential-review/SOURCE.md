@@ -1,0 +1,19 @@
+# Source
+- Upstream: https://github.com/trailofbits/skills
+- Path: plugins/differential-review/skills/differential-review
+- Commit: 196a9073ab10d35bacf111f945e02c00b2c6883a
+- Retrieved: 2026-10-25
+- License: CC-BY-SA-4.0 (repo-root LICENSE copied verbatim to LICENSE)
+- Attribution: "Differential Review" skill by Omar Inuwa, Trail of Bits (https://www.trailofbits.com/), from https://github.com/trailofbits/skills, licensed under Creative Commons Attribution-ShareAlike 4.0 International (https://creativecommons.org/licenses/by-sa/4.0/).
+- Share-alike: this adapted version (SKILL.md, methodology.md, adversarial.md, patterns.md, reporting.md, all modified) is licensed CC BY-SA 4.0 as well. Each file carries a notice that it was adapted.
+- Not copied: agents/openai.yaml and assets/trail-of-bits-mark.svg (host UI metadata), the plugin's agents/adversarial-modeler.md subagent, commands/diff-review.md slash command, README.md and .claude-plugin/plugin.json.
+- Changes for Agent Office:
+  - Frontmatter: dropped `allowed-tools`, added `license: CC-BY-SA-4.0`, description mentions BLOCKER/MAJOR/MINOR/NIT and the git requirement.
+  - Added an "Agent Office Notes" section: git/shell requirement and no-repo fallback, read-only git only (no checkout/reset/commit), no gh, severity mapping, output via write_file into the workspace, pointer to `security-verdict`.
+  - Removed delegation to the `differential-review:adversarial-modeler` subagent; Phase 5 is done by the agent itself using adversarial.md.
+  - Replaced the "Integration" section (audit-context-building and issue-writer, not bundled) with pointers to bundled `security-verdict`, `security-review`, `security-audit`, `test-gap-audit`; removed audit-context-building from the Deep Audit example.
+  - "User" wording changed to "whoever asked"; first-time/experienced-user lines reworded.
+  - methodology.md: baseline is read with `git ls-tree`/`git show` instead of `git checkout`; removed audit-context-building invocations (kept the manual line-by-line analysis); removed `gh pr view`.
+  - patterns.md: removed the list of other Trail of Bits pattern databases and plugins (not bundled); added a one-line note that the Solidity patterns generalize.
+  - adversarial.md: finding title placeholder uses BLOCKER/MAJOR/MINOR/NIT.
+  - reporting.md: severity table and labels mapped CRITICAL→BLOCKER, HIGH→MAJOR, MEDIUM→MINOR, LOW→NIT; recommendation APPROVE/REJECT/CONDITIONAL replaced by SHIP / FIX FIRST / NEEDS DISCUSSION; fixes are described, not applied; output location limited to the mission workspace (removed Desktop, temp dir and ~/.claude paths); removed issue-writer integration; notification addressed to whoever asked.

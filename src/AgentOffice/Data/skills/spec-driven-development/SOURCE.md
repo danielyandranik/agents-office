@@ -1,0 +1,14 @@
+# Source
+- Upstream: https://github.com/addyosmani/agent-skills
+- Path: skills/spec-driven-development
+- Commit: aeac41d4d005999432bb7312f7ff06383a91d59d
+- Retrieved: 2026-10-25
+- License: MIT (copied to LICENSE)
+- Changes for Agent Office:
+  - Softened the hard "stop your turn" gate after writing the spec: stop and wait only for hard-to-undo decisions or plan-changing questions; otherwise continue on stated assumptions and flag the spec as unreviewed (missions often run while the owner is away).
+  - Frontmatter: quoted description (mentions Risks); added license field
+  - Added Risks as a seventh core area and a Risks table (likelihood, impact, mitigation, early warning sign) in the spec template; added matching red flag and verification items
+  - Phase 2 carries spec risks forward into tasks/checkpoints
+  - Replaced planning-and-task-breakdown, context-engineering and /build references with writing-plans, short-design-doc, the mission board (board_add) and docs/plans/ in the mission workspace
+  - Phase 4 uses the bundled skill names; non-implementing roles hand tasks to the Software Engineer
+  - 'The human' -> 'the owner' throughout; spec save location includes the mission workspace

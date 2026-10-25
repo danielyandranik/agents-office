@@ -1,0 +1,13 @@
+# Source
+- Upstream: https://github.com/anthropics/knowledge-work-plugins
+- Path: data/skills/explore-data
+- Commit: 33d3dea41a341b341d4f5da2e8801ae0c89be2b8
+- Retrieved: 2026-10-25
+- License: Apache-2.0 (copied to LICENSE; text taken from the repo's plugin-level `data/LICENSE`, which is identical to the repo-root LICENSE minus ~10 lines of stray non-license text appended to the root file)
+- Changes for Agent Office:
+  - Frontmatter flattened; removed `argument-hint`.
+  - Removed the `/explore-data` usage block and CONNECTORS.md pointer.
+  - Rewrote "Access the Data": removed the data-warehouse MCP branch; work from files in the mission workspace or what the owner provides; note what cannot be checked without a shell.
+  - Data quality issues now carry BLOCKER/MAJOR/MINOR/NIT severity (definitions added).
+  - Schema exploration queries reworded for workspace database files or queries the owner runs; tips reworded (sampling is a choice, not automatic).
+  - This file set is a modified version of the upstream work (Apache-2.0 section 4(b)); changes listed here.

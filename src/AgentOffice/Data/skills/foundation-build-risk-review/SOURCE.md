@@ -1,0 +1,13 @@
+# Source
+- Upstream: https://github.com/product-on-purpose/pm-skills
+- Path: skills/foundation-build-risk-review (skill version 1.1.0). PM-Skills itself adapted this from bin1874/before-you-build-skill (Apache-2.0); attribution kept in SKILL.md.
+- Commit: f943d9589bfe9db06fac2641f9740987ff9b3aee
+- Retrieved: 2026-10-25
+- License: Apache-2.0 (copied to LICENSE; repo-level license, no NOTICE file upstream)
+- Bundled: SKILL.md, references/TEMPLATE.md, references/EXAMPLE.md, references/risk-taxonomy.md, references/routing-map.md (HISTORY.md and evals/ not bundled)
+- Changes for Agent Office:
+  - Frontmatter flattened (nested `metadata:` block removed); description no longer routes to iterate-pivot-decision.
+  - HTML attribution comments replaced by visible attribution lines in every file.
+  - Routing rewritten so it never dead-ends: only bundled skills are named (write-spec, deliver-acceptance-criteria, define-prioritization-framework, risk-assessment, estimate-with-uncertainty); every unbundled target (define-hypothesis, measure-experiment-design, define-problem-statement, foundation-lean-canvas, discover-competitive-analysis, discover-market-sizing, deliver-prd, deliver-user-stories, iterate-pivot-decision) is replaced by the skill's own "inline the minimal version" fallback, which is now the default. Applied to SKILL.md, references/routing-map.md, references/risk-taxonomy.md ("Routes to" column renamed "Next"), references/TEMPLATE.md and the routing line of references/EXAMPLE.md.
+  - Validation step: says who carries it out (usually the owner for anything touching real users or money; a named colleague for spikes or desk research).
+  - "the user" -> "whoever asked"; added a fallback when the one clarifying question can't be asked; read bundled files with read_skill_file; save in the workspace when possible.

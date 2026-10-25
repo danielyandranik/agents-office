@@ -1,0 +1,13 @@
+# Source
+- Upstream: https://github.com/obra/superpowers
+- Path: skills/writing-plans
+- Commit: 2ce8aa15d05bd57213e6f746f953aafb7ded7a8b
+- Retrieved: 2026-10-25
+- License: MIT (copied to LICENSE)
+- Changes for Agent Office:
+  - Frontmatter: quoted, expanded description; added license field
+  - Save path changed from docs/superpowers/plans/ to docs/plans/ in the mission workspace
+  - Removed the using-git-worktrees context line and the brainstorming reference (now points to spec-driven-development)
+  - Plan header: replaced REQUIRED SUB-SKILL (subagent-driven-development / executing-plans) with a soft pointer to incremental-implementation and test-driven-development
+  - Deleted the Execution Handoff section (subagent-driven vs native execution, executing-plans, subagent-driven-development); replaced with a short Handoff section using board_add, ask_colleague and work-handoff-brief
+  - Commit step marked as applying only when the workspace is a git repo; dropped 'not a subagent dispatch'

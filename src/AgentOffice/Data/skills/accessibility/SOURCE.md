@@ -1,0 +1,15 @@
+# Source
+- Upstream: https://github.com/addyosmani/web-quality-skills
+- Path: skills/accessibility
+- Commit: afa8da942115f2961fdbfa80807ea0b232ff6c00
+- Retrieved: 2026-10-25
+- License: MIT (repo-root LICENSE copied; Copyright (c) 2026 Addy Osmani)
+- Changes for Agent Office:
+  - Frontmatter flattened (removed metadata block), description quoted and extended to mention the QA hand-off; license kept as MIT
+  - "Evidence-led audit workflow" rewritten: read source and compute contrast from color values; ask the QA Engineer to run Lighthouse/axe, take an accessibility-tree snapshot and do keyboard passes; Chrome DevTools MCP steps removed; a role with a workspace shell may run the tools itself
+  - Removed the npx lighthouse / npm install @axe-core/cli / axe commands; replaced with "ask the QA Engineer to run"
+  - Manual testing checklist prefixed with what to check from source vs hand to QA
+  - "Common issues by impact" mapped to BLOCKER (Critical) / MAJOR (Serious) / MINOR (Moderate) / NIT, with a finding format
+  - Removed the cross-reference to ../web-quality-audit/SKILL.md (not bundled)
+  - references/WCAG.md: note that the testing tools are run by QA or a role with a shell
+- Vetting: HTML comments (<!-- -->) appear only inside HTML code samples as placeholder markers; no instructions in them. Outbound links are w3.org, dequeuniversity.com, deque.com, webaim.org, nvaccess.org, tpgi.com reference links.

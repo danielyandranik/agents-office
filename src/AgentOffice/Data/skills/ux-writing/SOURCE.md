@@ -1,0 +1,16 @@
+# Source
+- Upstream: https://github.com/content-designer/ux-writing-skill
+- Path: (repo root) SKILL.md, references/, examples/, templates/
+- Commit: 98cacde4ba2dd10ed28df43a8d53eef1e321c539
+- Retrieved: 2026-10-25
+- License: MIT (LICENSE copied; Copyright (c) 2026 Christopher Greer)
+- Not copied: build-skill.sh (packaging script), docs/figma-integration.md (Figma MCP setup; no MCP in Agent Office), dist/, demo videos, index.html, GitHub workflows, README/CHANGELOG/CONTRIBUTING/VERSIONING
+- Changes for Agent Office:
+  - Frontmatter: quoted description (lightly shortened), added license: MIT
+  - Removed the "Compatible with Claude, Codex, Cursor" and "works with Codex CLI, not ChatGPT" notes
+  - Removed the docs/figma-integration.md entry from Resources; added how to read bundled files and where to save copy decks
+  - Audits report issues with BLOCKER/MAJOR/MINOR/NIT
+  - Readability: estimate Flesch-Kincaid and sentence length instead of running Hemingway or similar tools; testing tools marked as for people
+  - "Review with team" changed to review with colleagues / whoever asked
+  - references/accessibility-guidelines.md: added a note that automated, screen-reader, and keyboard tests are handed to the QA Engineer
+- Vetting: only outbound links are reference links (w3.org, webaim.org, plainlanguage.gov, readable.com, hemingwayapp.com) in references/accessibility-guidelines.md; no scripts, HTML comments, encoded blobs, or odd Unicode in copied files.

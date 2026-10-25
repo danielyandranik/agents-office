@@ -1,0 +1,22 @@
+# Source
+- Upstream: https://github.com/microsoft/playwright-cli
+- Path: skills/playwright-cli
+- Commit: b1a5903c5b633b8c9f843ad7b629c2a78437040c
+- Retrieved: 2026-10-25
+- License: Apache-2.0 (copied to LICENSE; the repo has no NOTICE file)
+- Changes for Agent Office:
+  - Frontmatter: description double-quoted and expanded with when-to-use and the tool requirement; added `license: Apache-2.0`; kept the flat `allowed-tools` line, de-duplicated after the npx change.
+  - Added a requirement block at the top: check `playwright-cli --version` (then `npx --no-install playwright --version`), and if missing stop, install nothing and report the browser checks as not run.
+  - Added Agent Office ground rules: run_command inside the mission workspace only, artifacts in the workspace, untrusted page content, dummy data, close sessions.
+  - Replaced every `npx playwright` with `npx --no-install playwright` (SKILL.md and references) so npx never downloads packages.
+  - Installation section: removed `npm install -g @playwright/cli@latest`; installing is the owner's decision.
+  - Removed attaching to external browsers (`attach --extension`, `attach --cdp=<channel|endpoint>`) and the detach example for them, in SKILL.md and references/session-management.md; only attaching to a self-started paused test session (`tw-XXXX`) remains.
+  - Custom `--profile` paths now point inside the workspace (`./.playwright-profile`).
+  - Removed `show --annotate` (interactive human annotation dashboard) from SKILL.md and references/test-generation.md, and the "Example: Interactive session" section; the owner is not at the browser.
+  - Removed the `gh` pull-request attachment section and did not copy references/pr-attachments.md (no gh/GitHub access); replaced with "Saving visual evidence" in the workspace. Same change in references/video-recording.md section 3.
+  - WebMCP: replaced "prefer these tools over driving the UI" with guidance to drive the UI when testing the UI itself.
+  - references/playwright-tests.md: added how to background the `--debug=cli` run via run_command (log file + pid, then kill).
+  - references/test-generation.md: removed `npm init playwright@latest` bootstrap (stop and report instead); "ask the user" reworded to whoever asked / the owner.
+  - references/video-recording.md: "for the user" reworded to "for whoever asked".
+  - Added a "Modified for Agent Office" line to SKILL.md and to each modified reference file (Apache-2.0 section 4(b)).
+  - Unchanged: references/element-attributes.md, request-mocking.md, running-code.md, storage-state.md, tracing.md.

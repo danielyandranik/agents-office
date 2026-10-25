@@ -31,6 +31,17 @@ public sealed class OfficeOptions
     public int MaxToolOutputChars { get; set; } = 12_000;
 }
 
+public sealed class TelegramOptions
+{
+    public const string Section = "Telegram";
+
+    /// <summary>Token from @BotFather. Keep it in user secrets: dotnet user-secrets set "Telegram:BotToken" "…".</summary>
+    public string? BotToken { get; set; }
+
+    /// <summary>Bot API server. Change it only for a self-hosted Bot API server.</summary>
+    public string ApiBase { get; set; } = "https://api.telegram.org";
+}
+
 public sealed class ProviderOptions
 {
     public const string Section = "Providers";

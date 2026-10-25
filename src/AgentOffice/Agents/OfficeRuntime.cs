@@ -214,6 +214,22 @@ public sealed partial class OfficeRuntime(
         return true;
     }
 
+    /// <summary>Hands an office board card to its assignee (or <paramref name="leadId"/>) as a mission.</summary>
+    public (BoardCard Card, Mission Mission) StartCard(string cardId, string? leadId = null, string? workspace = null)
+    {
+        var card = board.Find(cardId) ?? throw new OfficeException(404, "No such card.");
+        if (card.MissionId is not null && IsRunning(card.MissionId)) throw new OfficeException(409, "Work on this card is already under way.");
+        var lead = leadId ?? card.Assignee ?? throw new OfficeException(400, "Assign the card to someone first.");
+        var goal = $"{card.Title}\n\n{card.Description}".Trim()
+            + $"\n\n(Office board card #{card.Number}. When you're done, say what's ready for the owner to review.)";
+        var mission = StartMission(new MissionRequest(card.Title, goal, MissionModes.Delegate, lead, [lead], workspace, null));
+        board.Started(card.Id, mission.Id);
+        // A very quick mission may already be over before the card was linked to it.
+        if (store.FindMission(mission.Id) is { Status: not (MissionStatus.Running or MissionStatus.Idle) } ended)
+            board.MissionEnded(ended.Id, ended.Status, ended.Error);
+        return (board.Find(card.Id)!, mission);
+    }
+
     public T UpdateBoard<T>(string missionId, Func<List<BoardTask>, T> change)
     {
         var (result, board) = store.Write(s =>
@@ -286,7 +302,7 @@ public sealed partial class OfficeRuntime(
     {
         var officeName = store.Read(s => s.Name);
         var mySkills = skills.Resolve(me.Skills);
-        var tools = new AgentToolbox(this, me, ctx, _opt, httpFactory, mySkills).Build(everyone);
+        var tools = new AgentToolbox(this, me, ctx, _opt, httpFactory, mySkills, name => skills.Resolve([name]).FirstOrDefault()).Build(everyone);
         return new ChatClientAgent(clients.Get(me.Provider, me.Model), new ChatClientAgentOptions
         {
             Id = me.Id,

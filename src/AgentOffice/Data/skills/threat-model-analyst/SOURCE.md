@@ -1,0 +1,23 @@
+# Source
+- Upstream: https://github.com/github/awesome-copilot
+- Path: skills/threat-model-analyst
+- Commit: d85f762d6e521abf5fe16703946e9b38adc42da7
+- Retrieved: 2026-10-25
+- License: MIT (copied to LICENSE, from the repo root; Copyright GitHub, Inc.)
+- Changes for Agent Office:
+  - SKILL.md: flat frontmatter (double-quoted description, `license: MIT`); removed the "only activate when the user explicitly requests it or invokes /threat-model-analyst" gate and slash-command language; kept "use when asked for a threat model".
+  - SKILL.md: added an "Agent Office notes" section (tools, optional shell, git only in a repo, read-only toward the code, output folder location, secret redaction, severity mapping, hand-off to `security-verdict`, reporting back); added a "Not this skill" line pointing to bundled skills.
+  - Severity: SDL Bug Bar Critical/Important/Moderate/Low mapped to BLOCKER/MAJOR/MINOR/NIT; finding attribute `SDL Bugbar Severity` renamed `Severity`; sort orders, enumeration lists, Classification Reference row, JSON `severity` and `findings_by_severity` keys updated in analysis-principles.md, output-formats.md, verification-checklist.md, incremental-orchestrator.md, orchestrator.md and skeleton-findings/assessment/inventory.md. Tier priority labels and the report Risk Rating are unchanged.
+  - orchestrator.md: replaced "Sub-Agent Governance" with "Single-Agent Execution" (no sub-agents, one output folder, lean context, optional shell, read-only toward code, never copy secret values); verification and JSON generation are done by the agent itself instead of delegated.
+  - orchestrator.md: rewrote the Tool Usage section (mission board tracking if available, no delegation, optional `ask_colleague`); truncation recovery now re-extracts from disk, uses an optional self-written Python script only with a shell, or concatenates part files instead of `replace_string_in_file`.
+  - orchestrator.md: git metadata collection made conditional on `run_command` and a git repo (otherwise `Unavailable`); removed the allowance to clean up git worktrees; default scope is the mission workspace root.
+  - analysis-principles.md: "Use sub-agents for scale" replaced by sequential batches of 3-5 components.
+  - incremental-orchestrator.md: removed sub-agent governance; added a git-availability rule and "No-git fallback" notes for setup, change detection and new-component discovery; replaced `git worktree add` (writes outside the workspace) with read-only `git show`/`git ls-tree`; Rule I6 rewritten to forbid any repository state change; Report Metadata row "Baseline Worktree" renamed "Baseline Code Access".
+  - incremental-orchestrator.md: removed the reference to the unbundled `experiment-history/mode-c-verification-suite.md` (the listed checks are now run directly); fixed two leftover `[STILL PRESENT]` tags to the simplified `[Existing]` tag the checklist requires.
+  - verification-checklist.md: removed sub-agent delegation language; removed sections 5.4 and 5.5 and the old Phase 8, which validate outputs of a separate comparison tool (metadata.json, diff-result.json) not bundled here and contradicted the incremental HTML skeleton; new Phase 8 points to the HTML quick-checks and adds no-script/no-external-resource checks.
+  - verification-checklist.md: Phase 6.3 now checks for one bidirectional flow per interaction, matching the orchestrator's return-flow rule (upstream required separate return flows, a contradiction).
+  - output-formats.md: config-key extraction now records key names only and never opens real `.env`/secret files for values; output folder at the mission workspace root; self-check results go to working notes instead of "the orchestrator".
+  - skeleton-incremental-html.md and incremental-orchestrator.md: the HTML report must contain no `<script>`, no inline event handlers and no external fonts/images/CSS.
+  - All files: PowerShell `Get-Date -Format ... -AsUTC` replaced by `date -u +"%Y-%m-%d %H:%M:%S"`; `Test-Path` replaced by `list_files`/`read_file`; `create_file`/`edit_file` replaced by `write_file`; "the user" replaced by "the owner"/"whoever asked" where it meant the requester.
+  - Unchanged: diagram-conventions.md, tmt-element-taxonomy.md, skeleton-architecture/dfd/summary-dfd/threatmodel/stride-analysis.md.
+- Vetting notes: every file read in full. No curl/wget/pipe-to-shell/eval, no base64 blobs, no zero-width or bidi Unicode, no references to ~/.ssh or ~/.aws. URLs are citations only (OWASP, CWE, FIRST CVSS, Microsoft SDL/STRIDE, NIST, example vendor docs). The 57 HTML comments were reviewed: all are formatting self-checks or skeleton fill hints, kept as is. Upstream scripts: none in this skill folder.

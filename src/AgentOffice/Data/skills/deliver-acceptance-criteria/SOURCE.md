@@ -1,0 +1,13 @@
+# Source
+- Upstream: https://github.com/product-on-purpose/pm-skills
+- Path: skills/deliver-acceptance-criteria (skill version 1.1.1; repo release v2.34.0)
+- Commit: f943d9589bfe9db06fac2641f9740987ff9b3aee
+- Retrieved: 2026-10-25
+- License: Apache-2.0 (copied to LICENSE; repo-level license, no NOTICE file upstream)
+- Bundled: SKILL.md, references/TEMPLATE.md, references/EXAMPLE.md (HISTORY.md and evals/ not bundled; the skill does not read them)
+- Changes for Agent Office:
+  - Frontmatter flattened (nested `metadata:` block removed; version recorded here); description routes story writing to write-spec instead of deliver-user-stories.
+  - HTML attribution comment replaced by a visible attribution line; HTML guidance comments in references/TEMPLATE.md converted to visible blockquotes.
+  - "When NOT to Use" routing edited so it never dead-ends: deliver-user-stories / deliver-prd -> write-spec; measure-experiment-design and the deliver-prd "AI Behavior and Evaluation" pointer replaced by inline guidance.
+  - Step 1: look for the story in workspace files / the board card first; "the user" -> "whoever asked".
+  - Output Contract: read the template with read_skill_file; number criteria AC-n so they map to ac-test-plan and board cards.

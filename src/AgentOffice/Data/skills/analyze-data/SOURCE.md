@@ -1,0 +1,14 @@
+# Source
+- Upstream: https://github.com/anthropics/knowledge-work-plugins
+- Path: data/skills/analyze
+- Commit: 33d3dea41a341b341d4f5da2e8801ae0c89be2b8
+- Retrieved: 2026-10-25
+- License: Apache-2.0 (copied to LICENSE; text taken from the repo's plugin-level `data/LICENSE`, which is identical to the repo-root LICENSE minus ~10 lines of stray non-license text appended to the root file)
+- Changes for Agent Office:
+  - Renamed: upstream skill `analyze` is vendored as `analyze-data` (folder and frontmatter name).
+  - Frontmatter flattened; removed `argument-hint`; description notes data comes from workspace files or the owner.
+  - Removed the `/analyze` usage block, slash-command examples and the CONNECTORS.md pointer.
+  - Rewrote "Gather Data": removed the data-warehouse MCP branch; data comes from files in the mission workspace (list_files/read_file, run_command with installed tools) or what the owner provides.
+  - Removed references to unbundled skills `sql-queries` and `data-visualization`; inlined brief query-writing and chart-selection guidance instead; added references to bundled `explore-data`, `statistical-analysis`, `ab-test-analysis`, `validate-data`.
+  - "the user" -> the owner / whoever asked; "Claude" -> neutral wording; outputs saved to the workspace.
+  - This file set is a modified version of the upstream work (Apache-2.0 section 4(b)); changes listed here.

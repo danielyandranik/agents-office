@@ -1,0 +1,12 @@
+# Source
+- Upstream: https://github.com/wshobson/agents
+- Path: plugins/incident-response/skills/incident-runbook-templates
+- Commit: 0874a27b17a22e2b7c2e2bcd725768e0803cad06
+- Retrieved: 2026-10-25
+- License: MIT (copied to LICENSE)
+- Changes for Agent Office:
+  - Frontmatter: description double-quoted; added `license: MIT`.
+  - Added an "In Agent Office" section: write runbooks to the workspace, mark each step read-only vs changes-production, production mitigations go through `prod-change-approval` even in an incident, no Slack/pager (draft comms for the owner, track on the board).
+  - Related skills: removed unbundled `on-call-handoff-patterns`; added `prod-change-approval` and `slo-implementation`.
+  - `references/details.md`: added an approval note at the top; repaired broken nested code fences (stray close after Initial Triage, Template 2 outer fence); example commands unchanged.
+  - Community guidance, not vendor-validated.

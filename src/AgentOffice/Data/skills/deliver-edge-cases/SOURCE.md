@@ -1,0 +1,13 @@
+# Source
+- Upstream: https://github.com/product-on-purpose/pm-skills
+- Path: skills/deliver-edge-cases (skill version 2.1.1)
+- Commit: f943d9589bfe9db06fac2641f9740987ff9b3aee
+- Retrieved: 2026-10-25
+- License: Apache-2.0 (copied to LICENSE; repo-level license, no NOTICE file upstream)
+- Bundled: SKILL.md, references/TEMPLATE.md, references/EXAMPLE.md (HISTORY.md and evals/ not bundled)
+- Changes for Agent Office:
+  - Frontmatter flattened (nested `metadata:` block removed).
+  - HTML attribution comment replaced by a visible attribution line; HTML guidance comments in references/TEMPLATE.md converted to visible blockquotes.
+  - "When NOT to Use" routing edited: deliver-prd -> write-spec; iterate-lessons-log and deliver-launch-checklist (not bundled) replaced by inline guidance.
+  - Step 1: read the spec/mockups/board card first if available. Output Format: read the template with read_skill_file.
+  - Added a note that the template's P1/P2/P3 is a test priority, and findings use BLOCKER/MAJOR/MINOR/NIT.

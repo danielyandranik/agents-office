@@ -1,0 +1,14 @@
+# Source
+- Upstream: https://github.com/docker/skills
+- Path: skills/docker-build-strategies
+- Commit: 179c9cfd04c89ae50cd5d5d68b939797a8fd03d3
+- Retrieved: 2026-10-25
+- License: Apache-2.0 (copied to LICENSE; no NOTICE file upstream)
+- Changes for Agent Office:
+  - Frontmatter: description double-quoted, notes Docker 23+ requirement; `compatibility` moved into a Requirements paragraph.
+  - Removed `scripts/verify-build.sh` and the "Scripts" section; replaced with "Verifying a build" using the manual `docker build` / `docker images` / `docker inspect` fallback the upstream skill documents.
+  - `checks/verification.md`: removed the "Scripted verification" section; SSH-agent step defers to the owner.
+  - SSH-agent guidance: ask the owner to run interactive agent steps; never read or copy the owner's keys or credential files.
+  - Related skills: removed `docker-project-foundations` and `docker-compose-patterns`; kept `docker-destructive-guardrails`; added `prod-change-approval` for pushing/deploying images; removed the scaffold bullet that pointed to the unbundled foundations skill.
+  - Not bundled: `skill.yaml`, `agents/openai.yaml` (catalog metadata). References and assets copied unchanged.
+  - This file set is a modified version of the upstream work (Apache-2.0 section 4(b)); changes listed here.

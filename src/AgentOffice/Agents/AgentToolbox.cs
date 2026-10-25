@@ -29,7 +29,8 @@ public sealed partial class AgentToolbox(
     RunContext ctx,
     OfficeOptions options,
     IHttpClientFactory httpFactory,
-    IReadOnlyList<SkillLibrary.SkillView> skills)
+    IReadOnlyList<SkillLibrary.SkillView> skills,
+    Func<string, SkillLibrary.SkillView?> librarySkill)
 {
     public IList<AITool> Build(IReadOnlyList<AgentProfile> colleagues)
     {
@@ -68,9 +69,9 @@ public sealed partial class AgentToolbox(
         if (skills.Count > 0)
         {
             tools.Add(AIFunctionFactory.Create(UseSkill, "use_skill",
-                $"Load the full instructions of one of your skills. Skills: {string.Join(", ", skills.Select(s => s.Name))}."));
-            if (skills.Any(s => s.Files.Count > 0))
-                tools.Add(AIFunctionFactory.Create(ReadSkillFile, "read_skill_file", "Read a file bundled with one of your skills (use_skill lists them)."));
+                $"Load the full instructions of one of your skills: {string.Join(", ", skills.Select(s => s.Name))}. "
+                + "You can also load another skill from the office library by its exact name when one of your skills points to it."));
+            tools.Add(AIFunctionFactory.Create(ReadSkillFile, "read_skill_file", "Read a file bundled with a skill (use_skill lists them)."));
         }
 
         var others = colleagues.Where(c => c.Id != me.Id).ToList();
@@ -178,10 +179,17 @@ public sealed partial class AgentToolbox(
 
     // ---------------------------------------------------------------- skills
 
+    /// <summary>Your own skills first; any other library skill by exact name, since skills point to each other.</summary>
+    private SkillLibrary.SkillView? FindSkill(string? name)
+    {
+        var key = (name ?? "").Trim();
+        return skills.FirstOrDefault(s => s.Name == key) ?? (key.Length > 0 ? librarySkill(key) : null);
+    }
+
     private string UseSkill([Description("Skill name.")] string name)
     {
-        var skill = skills.FirstOrDefault(s => s.Name == (name ?? "").Trim());
-        if (skill is null) return $"You don't have a skill called '{name}'. Yours: {string.Join(", ", skills.Select(s => s.Name))}.";
+        var skill = FindSkill(name);
+        if (skill is null) return $"There's no skill called '{name}'. Yours: {string.Join(", ", skills.Select(s => s.Name))}.";
         var text = $"# Skill: {skill.Name}\n\n{skill.Instructions}";
         if (skill.Files.Count > 0) text += $"\n\nFiles bundled with this skill (read them with read_skill_file):\n- {string.Join("\n- ", skill.Files)}";
         return Clip(text, Math.Max(options.MaxToolOutputChars, 40_000));
@@ -191,8 +199,8 @@ public sealed partial class AgentToolbox(
         [Description("Skill name.")] string skill,
         [Description("File path inside the skill, as listed by use_skill.")] string path)
     {
-        var s = skills.FirstOrDefault(x => x.Name == (skill ?? "").Trim());
-        if (s is null) return $"You don't have a skill called '{skill}'.";
+        var s = FindSkill(skill);
+        if (s is null) return $"There's no skill called '{skill}'.";
         var root = Path.GetFullPath(s.Dir);
         var full = Path.GetFullPath(Path.Combine(root, path ?? ""));
         if (!Paths.IsInside(full, root) || !Paths.IsInside(RealPath(full), RealPath(root))) return $"'{path}' is not part of the {s.Name} skill.";

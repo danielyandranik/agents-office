@@ -1,0 +1,15 @@
+# Source
+- Upstream: https://github.com/product-on-purpose/pm-skills
+- Path: skills/foundation-meeting-recap (skill version 1.2.0); contract excerpt from site/src/content/docs/reference/skill-families/meeting-skills-contract.md (contract v1.1.0)
+- Commit: f943d9589bfe9db06fac2641f9740987ff9b3aee
+- Retrieved: 2026-10-25
+- License: Apache-2.0 (copied to LICENSE; repo-level license, no NOTICE file upstream)
+- Bundled: SKILL.md, references/TEMPLATE.md, references/EXAMPLE.md, references/meeting-skills-contract.md (excerpt; HISTORY.md and evals/ not bundled)
+- Changes for Agent Office:
+  - Frontmatter flattened (nested `metadata:` block removed); description drops "Krisp MCP" and the discover-interview-synthesis pointer.
+  - HTML attribution comment replaced by a visible attribution line.
+  - The Meeting Skills Family Contract link (../../docs/..., a path outside the skill) replaced by a bundled excerpt, references/meeting-skills-contract.md, keeping only what governs the recap (principles, taxonomies, output requirements, file naming, non-goals); sibling-skill sections, CI enforcement, versioning and change log removed; `--go` flag replaced by "skip when told to or when nobody can answer".
+  - Removed the "Project Memory Contract" section (it read and wrote a `.claude/pm-skills.local.md` memory file).
+  - "When NOT to Use" and "See also": unbundled siblings (foundation-meeting-agenda/brief/synthesize, foundation-stakeholder-update, discover-interview-synthesis) replaced by inline guidance or bundled skills (status-report, work-handoff-brief).
+  - Agenda auto-discovery done with list_files in the mission workspace; follow-up via ask_colleague instead of a Slack thread.
+  - Added step 11: save the recap in the workspace; optionally track owned actions as board tasks/cards (never unassigned ones).

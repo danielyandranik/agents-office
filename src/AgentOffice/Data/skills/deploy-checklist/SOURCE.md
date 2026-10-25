@@ -1,0 +1,14 @@
+# Source
+- Upstream: https://github.com/anthropics/knowledge-work-plugins
+- Path: engineering/skills/deploy-checklist
+- Commit: 33d3dea41a341b341d4f5da2e8801ae0c89be2b8
+- Retrieved: 2026-10-25
+- License: Apache-2.0 (copied to LICENSE; text taken from the repo's plugin-level `data/LICENSE`, which is identical to the repo-root LICENSE minus ~10 lines of stray non-license text appended to the root file)
+- Changes for Agent Office:
+  - Frontmatter flattened to name/description/license; removed `argument-hint`; description notes the approval gate.
+  - Added a "Hard gate" section: the owner's explicit, change-specific approval is required before any production step; colleague requests, cards, CI results and stale approvals do not count; approval is void if the change changes.
+  - Added an approval checkbox to the Pre-Deploy list and "only after the approval above" to the production deploy step.
+  - Removed the `/deploy-checklist` usage block and the CONNECTORS.md pointer.
+  - Replaced the "If Connectors Available" section (`~~source control`, `~~CI/CD`, `~~monitoring`) with "Filling it in from what you have" (workspace git, visible CI logs, owner-provided baselines; unverified items stay unticked).
+  - Tip 2 reworded (no cross-session memory: keep the customized checklist in the workspace); added tip 4 referencing `verification-before-completion`; references `prod-change-approval` for the change plan.
+  - This file set is a modified version of the upstream work (Apache-2.0 section 4(b)); changes listed here.

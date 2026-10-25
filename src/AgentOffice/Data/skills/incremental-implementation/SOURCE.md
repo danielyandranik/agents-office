@@ -1,0 +1,13 @@
+# Source
+- Upstream: https://github.com/addyosmani/agent-skills
+- Path: skills/incremental-implementation
+- Commit: aeac41d4d005999432bb7312f7ff06383a91d59d
+- Retrieved: 2026-10-25
+- License: MIT (copied to LICENSE)
+- Changes for Agent Office:
+  - Frontmatter: quoted description; added license field
+  - Bundled repo-level references/definition-of-done.md as references/definition-of-done.md and fixed the path (was ../../references/)
+  - Removed cross-references to git-workflow-and-versioning and to a 'Discover the Stack First' TDD section that our bundled TDD skill does not have
+  - Out-of-scope findings go to the mission board (board_add) or the report; 'Working with Agents' reframed as handing an increment to a colleague
+  - See Also now also points to verification-before-completion
+  - definition-of-done.md: removed references to unbundled skills (planning-and-task-breakdown, shipping-and-launch, code-review-and-quality, code-simplification, security-and-hardening, observability-and-instrumentation); security item points to the Security Reviewer colleague; 'the human' -> 'the owner'

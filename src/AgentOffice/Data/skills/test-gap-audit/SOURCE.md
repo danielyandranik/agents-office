@@ -1,0 +1,16 @@
+# Source
+- Upstream: https://github.com/github/awesome-copilot
+- Path: skills/test-gap-audit
+- Commit: d85f762d6e521abf5fe16703946e9b38adc42da7
+- Retrieved: 2026-10-25
+- License: MIT (copied to LICENSE; repo-root license, Copyright GitHub, Inc.)
+- Changes for Agent Office:
+  - Description double-quoted; "the user" reworded to "whoever asked"; notes the BLOCKER/MAJOR/MINOR/NIT scale.
+  - Deleted the optional `scripts/coverage_map.py` step (and did not copy `scripts/`); kept and expanded the documented manual fallback (match by name, mirrored path and imports, confirm with grep, flag assertion-light test files).
+  - Mapped the P0-P3 severity rubric to BLOCKER (P0), MAJOR (P1), MINOR (P2), NIT (P3) in the rubric, report header and report template.
+  - `git status --short` made conditional on a shell and a git workspace; otherwise use `list_files`.
+  - Verification step made conditional on having `run_command`; "repository" reworded to "workspace"/"code base" where it meant the audit target.
+  - Added an optional step to add one mission-board task per BLOCKER/MAJOR gap.
+  - Post-audit implementation now points to the bundled `verification-before-completion` skill.
+  - Replaced "Related Skills" (docs-sync-audit and an external review-skills repo, neither bundled) with pointers to bundled `ac-test-plan` and `flaky-test-triage`.
+  - Rewrote "Agent Portability Notes" for our tools (no MCP, browser, CI or inline-review integrations).

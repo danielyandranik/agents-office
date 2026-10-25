@@ -1,0 +1,16 @@
+# Source
+- Upstream: https://github.com/dsebastien/technical-documentation-skill
+- Path: skills/technical-documentation
+- Commit: 19dd53184ef2755504d985d68f98ff73b05cacda
+- Retrieved: 2026-10-25
+- License: Apache-2.0 (repo-root LICENSE copied; no NOTICE file in the repo)
+- Not copied: scripts/install.sh and scripts/install.ps1 (installers), agents/openai.yaml (Codex UI metadata), evals/, docs/, GitHub workflow
+- Changes for Agent Office:
+  - Frontmatter flattened (removed metadata block), description quoted and extended with the verify-or-mark-unverified rule
+  - "Ground the content" made the explicitly central rule: verify by reading the defining source (parser, handler, schema, defaults, tests, CI config) with read_file/list_files/fetch_url; when only running proves a claim, ask the Software Engineer or QA Engineer to run it and report exact output; keep a list of verified and unverified items
+  - "Verify examples when the environment permits it" replaced with source verification or a colleague's run, else label unverified
+  - Delivery: save to the mission workspace with write_file; "the user" changed to "whoever asked"; review findings tagged BLOCKER/MAJOR/MINOR/NIT
+  - Added pointers to bundled skills (diataxis-docs-framework, documentation-writer, release-notes-from-board, humanizer)
+  - references/review-checklist.md: severity names critical/major/minor mapped to BLOCKER/MAJOR/MINOR plus NIT; code-sample and link checks adapted to no shell (fetch_url, list_files)
+  - Added modification notices at the end of SKILL.md and references/review-checklist.md (Apache-2.0 section 4(b)); references/document-patterns.md and references/google-style-guide.md unchanged
+- Vetting: outbound links are developers.google.com/style pages only. Single author, 4 stars: forked and owned here.

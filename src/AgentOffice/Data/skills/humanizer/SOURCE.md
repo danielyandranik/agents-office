@@ -1,0 +1,11 @@
+# Source
+- Upstream: https://github.com/blader/humanizer
+- Path: SKILL.md (repo root)
+- Commit: 8c307f367c91bd974002f10f2be2965d642c13df
+- Retrieved: 2026-10-25
+- License: MIT (LICENSE copied; Copyright (c) 2025 Siqi Chen)
+- Not copied: scripts/validate-package.py, agents/openai.yaml, plugin manifests, GitHub templates/workflows, README/CHANGELOG/AGENTS.md
+- Changes for Agent Office:
+  - Frontmatter flattened (removed metadata block, YAML block scalar turned into a quoted one-line description); license MIT
+  - "the user" changed to "whoever asked"; file mode writes the workspace file with write_file
+- Vetting: one outbound link (Wikipedia "Signs of AI writing", credited as the source of the patterns); no scripts referenced, no HTML comments, encoded blobs, or odd Unicode.

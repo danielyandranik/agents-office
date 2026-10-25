@@ -1,0 +1,18 @@
+# Source
+- Upstream: https://github.com/dr-spook/ui-ux-designer-skill
+- Path: skills/ui-ux-designer
+- Commit: bf0ee838620e74a11115841346330953da13bced
+- Retrieved: 2026-10-25
+- License: MIT (repo-root LICENSE copied to LICENSE; Copyright (c) 2026 Boubacar Sidiki ZANGO (dr-spook))
+- Files: SKILL.md and all nine references/*.md, each read in full. Not copied: CHANGELOG.md (French release notes), README, dist/ bundles, plugin manifests, assets.
+- Changes for Agent Office:
+  - Frontmatter flattened (removed metadata block), description quoted and rewritten; deleted the SKIP clause for HTML mockups (the Product Designer saves simple static HTML mockups to the workspace)
+  - "Never write code" hard constraint narrowed to "never write production code"; simple static HTML mockups saved with write_file are allowed and labeled as mockups; same change in the Pre-Delivery Checklist and "Errors to avoid" (references/delivery-and-qa.md)
+  - Guide is saved to the mission workspace with write_file
+  - "the user" (requester) replaced with "the owner or whoever asked"; clarifying questions go in the reply or via ask_colleague
+  - "No backlog" scenario input reworded; redesign scenario reuses existing patterns unless the audit shows they fail; activation step reads existing product screens first
+  - "ASO Strategist" (not an Agent Office role) replaced with a store-listing creative brief from the owner or Product Manager (SKILL.md and delivery-and-qa.md)
+  - "architect's blueprint" named as the Software Architect's blueprint
+  - references/audit-mode.md: added BLOCKER/MAJOR/MINOR/NIT tagging rules and tagged the example findings
+  - Added a closing pointer to the bundled ui-state-matrix, ux-writing, and accessibility skills
+- Vetting: no URLs, scripts, HTML comments, encoded blobs, or odd Unicode. Metadata says it was converted from a "Senior UI/UX Designer Agent (Pro Max Edition)" system prompt via skill-hunter; content is prose design guidance only. Single author, 2 stars: forked and owned here, not tracked.

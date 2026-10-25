@@ -6,8 +6,13 @@ using AgentOffice.Office;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// API keys and the Telegram bot token live in user secrets, which ASP.NET Core only loads in Development.
+// This app is usually started with a plain `dotnet run` (no launch profile, so Production): load them anyway.
+if (!builder.Environment.IsDevelopment()) builder.Configuration.AddUserSecrets<Program>(optional: true);
+
 builder.Services.Configure<OfficeOptions>(builder.Configuration.GetSection(OfficeOptions.Section));
 builder.Services.Configure<ProviderOptions>(builder.Configuration.GetSection(ProviderOptions.Section));
+builder.Services.Configure<TelegramOptions>(builder.Configuration.GetSection(TelegramOptions.Section));
 builder.Services.ConfigureHttpJsonOptions(o => o.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddSignalR().AddJsonProtocol(o => o.PayloadSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase);
 builder.Services.AddHttpClient("web", c =>
@@ -33,6 +38,8 @@ builder.Services.AddSingleton<OfficeBoard>();
 builder.Services.AddSingleton<ClaudeCliToolHost>();
 builder.Services.AddSingleton<ChatClientFactory>();
 builder.Services.AddSingleton<OfficeRuntime>();
+builder.Services.AddSingleton<TelegramBot>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<TelegramBot>());
 
 var app = builder.Build();
 
@@ -93,20 +100,17 @@ api.MapPost("/cards", (OfficeBoard board, CardRequest req) => Results.Ok(board.C
 api.MapPut("/cards/{id}", (OfficeBoard board, string id, CardRequest req) => Results.Ok(board.Update(id, req.ToChanges())));
 api.MapPost("/cards/{id}/move", (OfficeBoard board, string id, MoveCardRequest req) => Results.Ok(board.Move(id, req.Status, req.BeforeId)));
 api.MapDelete("/cards/{id}", (OfficeBoard board, string id) => { board.Delete(id); return Results.NoContent(); });
-api.MapPost("/cards/{id}/start", (OfficeBoard board, OfficeRuntime runtime, string id, StartCardRequest req) =>
+api.MapPost("/cards/{id}/start", (OfficeRuntime runtime, string id, StartCardRequest req) =>
 {
-    var card = board.Find(id) ?? throw new OfficeException(404, "No such card.");
-    if (card.MissionId is not null && runtime.IsRunning(card.MissionId)) throw new OfficeException(409, "Work on this card is already under way.");
-    var lead = req.LeadId ?? card.Assignee ?? throw new OfficeException(400, "Assign the card to someone first.");
-    var goal = $"{card.Title}\n\n{card.Description}".Trim()
-        + $"\n\n(Office board card #{card.Number}. When you're done, say what's ready for the owner to review.)";
-    var mission = runtime.StartMission(new MissionRequest(card.Title, goal, MissionModes.Delegate, lead, [lead], req.Workspace, null));
-    board.Started(card.Id, mission.Id);
-    // A very quick mission may already be over before the card was linked to it.
-    if (runtime.Store.FindMission(mission.Id) is { Status: not (MissionStatus.Running or MissionStatus.Idle) } ended)
-        board.MissionEnded(ended.Id, ended.Status, ended.Error);
-    return Results.Ok(new { card = board.Find(card.Id), mission });
+    var (card, mission) = runtime.StartCard(id, req.LeadId, req.Workspace);
+    return Results.Ok(new { card, mission });
 });
+
+// ---- Telegram: run the office from a paired Telegram chat
+api.MapGet("/telegram", (TelegramBot bot) => Results.Ok(bot.Status()));
+api.MapPost("/telegram/pair", (TelegramBot bot) => Results.Ok(bot.NewPairing()));
+api.MapPut("/telegram/chats/{id:long}", (TelegramBot bot, long id, MuteRequest req) => { bot.SetMuted(id, req.Muted); return Results.Ok(bot.Status()); });
+api.MapDelete("/telegram/chats/{id:long}", (TelegramBot bot, long id) => { bot.Unpair(id); return Results.NoContent(); });
 
 // ---- skills: Agent Skills (SKILL.md) that roles and colleagues can have
 api.MapGet("/skills", (SkillLibrary skills) => Results.Ok(skills.List()));
@@ -115,10 +119,11 @@ api.MapPut("/skills/{name}", (SkillLibrary skills, string name, SkillRequest req
 {
     var existing = skills.List().FirstOrDefault(s => s.Name == name);
     if (existing is null) return Results.NotFound(new { error = "No such skill." });
-    if (existing.ReadOnly) return Results.BadRequest(new { error = $"{name} comes from {existing.Source}; edit it there, or import a copy." });
+    if (existing.ReadOnly) return Results.BadRequest(new { error = $"{name} is read-only ({existing.Source}). Make an editable copy first." });
     return Results.Ok(skills.Save(name, req.Description, req.Instructions, mustBeNew: false));
 });
 api.MapDelete("/skills/{name}", (SkillLibrary skills, string name) => { skills.Delete(name); return Results.NoContent(); });
+api.MapPost("/skills/{name}/copy", (SkillLibrary skills, string name) => Results.Ok(skills.CopyToOffice(name)));
 api.MapPost("/skills/import", (SkillLibrary skills, ImportRequest req) => Results.Ok(skills.Import(req.Text)));
 
 // ---- colleagues
@@ -163,6 +168,7 @@ public sealed record SkillRequest(string? Name, string? Description, string? Ins
 public sealed record ImportRequest(string? Text);
 public sealed record MoveCardRequest(string? Status, string? BeforeId);
 public sealed record StartCardRequest(string? LeadId, string? Workspace);
+public sealed record MuteRequest(bool Muted);
 
 /// <summary>A whole card from the UI: missing assignee or points mean "none".</summary>
 public sealed record CardRequest(string? Title, string? Description, string? Status, string? Assignee, string? Priority, int? Points, bool? Blocked, string? BlockedReason)

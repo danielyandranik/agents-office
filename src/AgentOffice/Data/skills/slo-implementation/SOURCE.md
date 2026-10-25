@@ -1,0 +1,12 @@
+# Source
+- Upstream: https://github.com/wshobson/agents
+- Path: plugins/observability-monitoring/skills/slo-implementation
+- Commit: 0874a27b17a22e2b7c2e2bcd725768e0803cad06
+- Retrieved: 2026-10-25
+- License: MIT (copied to LICENSE)
+- Changes for Agent Office:
+  - Frontmatter: description double-quoted; added `license: MIT`.
+  - Added an "In Agent Office" section: rule files in the workspace, `promtool check rules` if installed, targets from owner data or marked assumptions, loading rules into production / changing paging / error-budget freezes via `prod-change-approval`, never change SLAs.
+  - Added a note that the alert rules need `burn_rate_30m/1h/6h` recording rules defined like `burn_rate_5m` (upstream references them without defining them).
+  - `references/details.md`: related skills `prometheus-configuration`/`grafana-dashboards` (not bundled) replaced with `incident-runbook-templates`/`postmortem-writing`.
+  - Community guidance, not vendor-validated.
