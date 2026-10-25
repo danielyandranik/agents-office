@@ -1,0 +1,7 @@
+bin/
+obj/
+.vs/
+.idea/
+*.user
+src/AgentOffice/office-data/
+.DS_Store
