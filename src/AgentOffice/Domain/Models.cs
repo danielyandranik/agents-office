@@ -94,6 +94,27 @@ public sealed class OfficeState
     public string Name { get; set; } = "Agent Office";
     public List<AgentProfile> Agents { get; set; } = [];
     public List<Mission> Missions { get; set; } = [];
+    /// <summary>Role templates the owner added. One with a built-in's title replaces that built-in.</summary>
+    public List<RoleTemplate> Roles { get; set; } = [];
+}
+
+/// <summary>A starting point for the hire dialog: fills in the form, which can then be changed.</summary>
+public sealed class RoleTemplate
+{
+    /// <summary>Set for the owner's roles; built-ins from Data/roles.json have none.</summary>
+    public string? Id { get; set; }
+    public string Title { get; set; } = "";
+    public string Summary { get; set; } = "";
+    public string Persona { get; set; } = "";
+    public Capabilities Can { get; set; } = new();
+    public RoleLook Look { get; set; } = new();
+}
+
+/// <summary>The part of a look that goes with the role; skin and hair stay the person's own.</summary>
+public sealed class RoleLook
+{
+    public string Shirt { get; set; } = "#3E7CB1";
+    public string Accessory { get; set; } = "none";
 }
 
 /// <summary>Everything that happens in the office is an event; the UI is a pure projection of these.</summary>

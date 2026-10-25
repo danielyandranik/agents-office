@@ -40,14 +40,44 @@
   });
 
   // ================================================================ paper-cut person
-  /** crop: 'full' (walking body), 'bust' (portrait), 'head' (tiny chips) */
-  function avatar(look = {}, crop = 'full') {
+  /** crop: 'full' (walking body), 'bust' (portrait), 'head' (tiny chips); face: 'front' or 'back' (seen from behind). */
+  function avatar(look = {}, crop = 'full', face = 'front') {
     const L = { skin: '#C68B59', hair: '#2B2118', hairStyle: 'short', shirt: '#3E7CB1', accessory: 'none', ...look };
     const vb = crop === 'head' ? '12 6 40 40' : crop === 'bust' ? '4 2 56 98' : '0 0 64 112';
     const sleeve = shade(L.shirt, -0.08);
+    const legs = `<g class="legs">
+        <g class="leg-l"><rect x="20" y="82" width="10" height="24" rx="4" fill="#3D4451"/><ellipse cx="25" cy="107" rx="6.5" ry="3" fill="#22262D"/></g>
+        <g class="leg-r"><rect x="34" y="82" width="10" height="24" rx="4" fill="#3D4451"/><ellipse cx="39" cy="107" rx="6.5" ry="3" fill="#22262D"/></g>
+      </g>`;
+    const arms = `<g class="arm-l"><rect x="6.5" y="51" width="9.5" height="27" rx="4.75" fill="${sleeve}"/><circle cx="11.25" cy="78" r="4.2" fill="${L.skin}"/></g>
+      <g class="arm-r"><rect x="48" y="51" width="9.5" height="27" rx="4.75" fill="${sleeve}"/><circle cx="52.75" cy="78" r="4.2" fill="${L.skin}"/></g>`;
+
+    if (face === 'back') {
+      const curls = [[20, 16], [26, 11], [32, 10], [38, 11], [44, 16], [18, 24], [25, 20], [32, 19], [39, 20], [46, 24], [20, 31], [27, 29], [32, 31], [37, 29], [44, 31], [32, 37]];
+      const cover = {
+        short: `<path d="M16.6 27 Q16 9 32 9 Q48 9 47.4 27 Q46.5 37.5 32 39.5 Q17.5 37.5 16.6 27 Z" fill="${L.hair}"/>`,
+        long: `<path d="M15.5 26 Q15.5 8.5 32 8.5 Q48.5 8.5 48.5 26 L49.5 51 Q41 54 32 54 Q23 54 14.5 51 Z" fill="${L.hair}"/>`,
+        bun: `<path d="M16.6 27 Q16 9.5 32 9.5 Q48 9.5 47.4 27 Q46 36.5 32 38.5 Q18 36.5 16.6 27 Z" fill="${L.hair}"/><circle cx="32" cy="13" r="7" fill="${shade(L.hair, -0.08)}"/>`,
+        curly: curls.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="6" fill="${L.hair}"/>`).join(''),
+        bald: '',
+      }[L.hairStyle] || '';
+      const acc = {
+        headphones: `<path d="M15 27 Q15 6 32 6 Q49 6 49 27" fill="none" stroke="#1D2836" stroke-width="3"/><rect x="11.5" y="23" width="7" height="11" rx="3" fill="#1D2836"/><rect x="45.5" y="23" width="7" height="11" rx="3" fill="#1D2836"/>`,
+        cap: `<path d="M16 23 Q16 7 32 7 Q48 7 48 23 Z" fill="${shade(L.shirt, -0.15)}"/><rect x="26" y="20" width="12" height="4" rx="1.5" fill="${shade(L.shirt, -0.32)}"/>`,
+      }[L.accessory] || '';
+      return `<svg class="av" viewBox="${vb}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${legs}
+        <rect x="27" y="36" width="10" height="12" rx="3" fill="${shade(L.skin, -0.1)}"/>
+        <path d="M11 86 V62 Q11 45.5 32 45.5 Q53 45.5 53 62 V86 Z" fill="${shade(L.shirt, -0.05)}"/>
+        <path d="M25 47.5 Q32 50.5 39 47.5" fill="none" stroke="${shade(L.shirt, -0.22)}" stroke-width="1.6"/>
+        ${arms}
+        <circle cx="16.8" cy="28" r="3" fill="${shade(L.skin, -0.05)}"/><circle cx="47.2" cy="28" r="3" fill="${shade(L.skin, -0.05)}"/>
+        <circle cx="32" cy="26" r="15" fill="${L.skin}"/>
+        ${cover}${acc}
+      </svg>`;
+    }
+
     const hairBack = {
       long: `<path d="M15 24 Q15 8 32 8 Q49 8 49 24 L50 50 Q41 53 32 53 Q23 53 14 50 Z" fill="${L.hair}"/>`,
-      curly: '',
       bun: `<circle cx="32" cy="8" r="6.5" fill="${L.hair}"/>`,
     }[L.hairStyle] || '';
     const hairFront = {
@@ -62,17 +92,13 @@
       headphones: `<path d="M15 27 Q15 6 32 6 Q49 6 49 27" fill="none" stroke="#1D2836" stroke-width="3"/><rect x="11.5" y="23" width="7" height="11" rx="3" fill="#1D2836"/><rect x="45.5" y="23" width="7" height="11" rx="3" fill="#1D2836"/>`,
       cap: `<path d="M16 22 Q16 7 32 7 Q48 7 48 22 Z" fill="${shade(L.shirt, -0.15)}"/><path d="M30 21 h22 q2 0 2 2 v0 q0 2 -2 2 h-22 z" fill="${shade(L.shirt, -0.25)}"/>`,
     }[L.accessory] || '';
-    return `<svg viewBox="${vb}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <g class="legs">
-        <g class="leg-l"><rect x="20" y="82" width="10" height="24" rx="4" fill="#3D4451"/><ellipse cx="25" cy="107" rx="6.5" ry="3" fill="#22262D"/></g>
-        <g class="leg-r"><rect x="34" y="82" width="10" height="24" rx="4" fill="#3D4451"/><ellipse cx="39" cy="107" rx="6.5" ry="3" fill="#22262D"/></g>
-      </g>
+    return `<svg class="av" viewBox="${vb}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      ${legs}
       ${hairBack}
       <rect x="27" y="37" width="10" height="11" rx="3" fill="${shade(L.skin, -0.06)}"/>
       <path d="M11 86 V62 Q11 45.5 32 45.5 Q53 45.5 53 62 V86 Z" fill="${L.shirt}"/>
       <path d="M26 46 L32 53 L38 46" fill="none" stroke="${shade(L.shirt, -0.18)}" stroke-width="1.6"/>
-      <g class="arm-l"><rect x="6.5" y="51" width="9.5" height="27" rx="4.75" fill="${sleeve}"/><circle cx="11.25" cy="78" r="4.2" fill="${L.skin}"/></g>
-      <g class="arm-r"><rect x="48" y="51" width="9.5" height="27" rx="4.75" fill="${sleeve}"/><circle cx="52.75" cy="78" r="4.2" fill="${L.skin}"/></g>
+      ${arms}
       <circle cx="32" cy="26" r="15" fill="${L.skin}"/>
       <circle cx="22.5" cy="31.5" r="2.6" fill="#E88B7A" opacity=".35"/><circle cx="41.5" cy="31.5" r="2.6" fill="#E88B7A" opacity=".35"/>
       <g class="eyes"><circle cx="26.5" cy="27" r="1.9" fill="#1D2836"/><circle cx="37.5" cy="27" r="1.9" fill="#1D2836"/></g>
@@ -81,24 +107,104 @@
     </svg>`;
   }
 
-  // ================================================================ floor geometry
-  const W = 1240;
-  const COLS = 4, DESK_X0 = 50, DESK_Y0 = 196, DX = 205, DY = 180, DESK_W = 170;
-  const MEET = { x: 892, y: 156, w: 320, h: 330 };
-  const deskXY = (slot) => ({ x: DESK_X0 + (slot % COLS) * DX, y: DESK_Y0 + Math.floor(slot / COLS) * DY, row: Math.floor(slot / COLS) });
-  const seatXY = (slot) => { const d = deskXY(slot); return { x: d.x + DESK_W / 2 - 32, y: d.y - 64, z: 10 + d.row * 10 + 2 }; };
-  const visitorXY = (slot) => { const d = deskXY(slot); return { x: d.x + DESK_W - 30, y: d.y + 18, z: 400 }; };
-  const meetingXY = (k, n) => {
-    const cx = MEET.x + MEET.w / 2, cy = MEET.y + MEET.h / 2 + 8;
-    const a = -Math.PI / 2 + (2 * Math.PI * k) / Math.max(n, 1);
-    return { x: cx + Math.cos(a) * 128 - 32, y: cy + Math.sin(a) * 92 - 92, z: 300 + Math.round(Math.sin(a) * 50) };
+  // Things people hold during breaks.
+  const PROPS = {
+    mug: ['hand', `<svg viewBox="0 0 20 26"><path class="steam-w" d="M7 7 q-2.5 -3 0 -6 M12 7 q-2.5 -3 0 -6" fill="none" stroke="#FFFFFF" stroke-width="1.4" stroke-linecap="round" opacity=".7"/><rect x="3" y="9" width="11" height="14" rx="2" fill="#F4F1EA" stroke="#8C8579" stroke-width=".8"/><path d="M14 12 h2 a3 3 0 0 1 0 6 h-2" fill="none" stroke="#F4F1EA" stroke-width="2"/></svg>`],
+    paddle: ['paddle', `<svg viewBox="0 0 22 32"><rect x="9" y="18" width="4" height="13" rx="2" fill="#7A5230"/><circle cx="11" cy="11" r="10" fill="#D23A2E" stroke="#8E2018" stroke-width="1"/></svg>`],
+    dart: ['dart', `<svg viewBox="0 0 24 8"><path d="M24 4 L18 3 L18 5 Z" fill="#9AA1A8"/><rect x="8" y="3" width="10" height="2" fill="#2B2B2B"/><path d="M8 4 L1 0 L3 4 L1 8 Z" fill="#E0B020"/></svg>`],
+    can: ['can', `<svg viewBox="0 0 34 30"><path d="M4 10 h16 v14 a3 3 0 0 1 -3 3 h-10 a3 3 0 0 1 -3 -3 z" fill="#4C8656"/><path d="M8 10 q4 -9 8 0" fill="none" stroke="#3B6C44" stroke-width="2"/><path d="M20 14 L30 8 L31 10 L21 18 Z" fill="#4C8656"/><g class="drops" fill="#7FC4E8"><circle cx="32" cy="14" r="1.2"/><circle cx="31" cy="19" r="1.2"/><circle cx="33" cy="23" r="1.2"/></g></svg>`],
+    book: ['chest', `<svg viewBox="0 0 32 18"><path d="M16 3 Q8 0 1 2 V17 Q8 15 16 17 Z" fill="#F7F3EA" stroke="#8B6A47"/><path d="M16 3 Q24 0 31 2 V17 Q24 15 16 17 Z" fill="#EFE8D8" stroke="#8B6A47"/><path d="M5 6 h7 M5 9 h7 M20 6 h7 M20 9 h7" stroke="#B9AF9C" stroke-width=".8"/></svg>`],
+    laptop: ['lap', `<svg viewBox="0 0 38 26"><rect x="4" y="0" width="30" height="19" rx="2" fill="#3A3F46"/><rect x="6" y="2" width="26" height="15" fill="#9FD3C0"/><rect x="0" y="19" width="38" height="6" rx="2" fill="#5A6068"/></svg>`],
   };
-  const stageHeight = () => {
-    const slots = Math.max(...[...S.agents.values()].map((a) => a.profile.desk + 1), 0);
-    const rows = Math.max(3, Math.ceil((slots + 1) / COLS));
-    return Math.max(820, DESK_Y0 + rows * DY + 40);
+
+  function plantSvg(kind) {
+    if (kind === 'monstera') {
+      const leaves = [[-34, 30, -40], [32, 26, 35], [-14, 6, -10], [16, 2, 14], [0, 34, 0], [-28, 52, -60], [30, 54, 60]];
+      return `<svg viewBox="-60 -10 120 130">${leaves.map(([x, y]) => `<path d="M0 84 Q${x * 0.4} ${(y + 84) / 2} ${x} ${y}" stroke="#3B6C44" stroke-width="2.4" fill="none"/>`).join('')}${leaves.map(([x, y, r]) => `<g transform="translate(${x} ${y}) rotate(${r})"><path d="M0 0 C-18 -8 -20 -34 0 -44 C20 -34 18 -8 0 0 Z" fill="#3F7D4B"/><path d="M0 -2 V-40 M0 -14 L-10 -22 M0 -26 L9 -32 M0 -18 L10 -12" stroke="#2C5C36" stroke-width="2" fill="none"/></g>`).join('')}
+        <path d="M-26 86 h52 l-6 32 h-40 z" fill="#C9C4BB"/><rect x="-28" y="80" width="56" height="10" rx="3" fill="#B7B1A6"/></svg>`;
+    }
+    // fiddle-leaf fig
+    const leaves = [[0, -6], [-14, 10], [14, 14], [-10, 30], [12, 36], [-16, 52], [10, 58], [0, 22]];
+    return `<svg viewBox="-40 -20 80 160"><path d="M0 120 V10" stroke="#6B4A2E" stroke-width="3"/>${leaves.map(([x, y], i) => `<ellipse cx="${x}" cy="${y}" rx="11" ry="15" transform="rotate(${i % 2 ? 30 : -30} ${x} ${y})" fill="${i % 3 ? '#4E8A55' : '#3E7547'}"/>`).join('')}
+      <path d="M-20 110 h40 l-5 30 h-30 z" fill="#2F3337"/></svg>`;
+  }
+
+  function skylineSvg(i) {
+    const blds = i === 0
+      ? [[0, 30, 22, 52], [22, 18, 18, 64], [40, 40, 26, 42], [66, 24, 20, 58], [86, 34, 26, 48]]
+      : [[0, 36, 26, 46], [26, 14, 16, 68], [42, 28, 24, 54], [66, 44, 22, 38], [88, 22, 24, 60]];
+    const lit = [];
+    blds.forEach(([x, y, w, h], k) => { for (let yy = y + 6; yy < y + h - 4; yy += 9) for (let xx = x + 4; xx < x + w - 4; xx += 7) if ((xx * 7 + yy * 3 + k) % 5 < 2) lit.push(`<rect class="lit" x="${xx}" y="${yy}" width="3" height="4"/>`); });
+    const tower = i === 1 ? `<g class="bld"><rect x="52" y="10" width="14" height="12" rx="2"/><path d="M50 10 L59 2 L68 10 Z"/><rect x="54" y="22" width="2" height="8"/><rect x="62" y="22" width="2" height="8"/></g>` : '';
+    return `<svg viewBox="0 0 112 82" preserveAspectRatio="none" aria-hidden="true">${tower}${blds.map(([x, y, w, h]) => `<rect class="bld" x="${x}" y="${y}" width="${w}" height="${h}"/>`).join('')}${lit.join('')}</svg>`;
+  }
+
+  // ================================================================ loft geometry
+  const W = 1240, WALL_H = 132;
+  const COLS = 4, DESK_X0 = 60, DESK_Y0 = 320, DX = 200, DY = 168, DESK_W = 170;
+  const MEET = { x: 880, y: 150, w: 342, h: 300 };
+  const MEET_TABLE = { x: 950, y: 290, w: 200, h: 56 };
+  const deskXY = (slot) => ({ x: DESK_X0 + (slot % COLS) * DX, y: DESK_Y0 + Math.floor(slot / COLS) * DY });
+  const seatXY = (slot) => { const d = deskXY(slot); return { x: d.x + DESK_W / 2 - 32, y: d.y - 64, z: d.y + 40, desk: true }; };
+  const visitorXY = (slot) => { const d = deskXY(slot); return { x: d.x + DESK_W - 26, y: d.y + 18, z: d.y + 130 }; };
+  // Stand-up meeting around the long table: behind it (facing us), in front of it (backs to us), then the ends.
+  const MEET_SEATS = [
+    { x: 1018, y: 192 }, { x: 1028, y: 296, face: 'back' }, { x: 958, y: 192 }, { x: 968, y: 296, face: 'back' },
+    { x: 1078, y: 192 }, { x: 1088, y: 296, face: 'back' }, { x: 892, y: 236 }, { x: 1150, y: 236, mirror: true },
+  ];
+  const meetingXY = (k) => { const s = MEET_SEATS[k % MEET_SEATS.length]; return { ...s, z: s.y + 112 }; };
+
+  function layout() {
+    const maxSlot = Math.max(-1, ...[...S.agents.values()].map((a) => a.profile.desk));
+    const rows = Math.max(2, Math.ceil((maxSlot + 2) / COLS));
+    const playTop = Math.max(DESK_Y0 + (rows - 1) * DY + 74 + 44, 606);
+    return { rows, slots: rows * COLS, playTop, H: Math.max(1080, playTop + 384) };
+  }
+  const stageHeight = () => layout().H;
+  const doorXY = () => ({ x: -66, y: stageHeight() - 176, z: 4500 });
+
+  /** Where people can spend a break. y is the top of the figure; z defaults to the feet. */
+  function spotsFor(L) {
+    const p = L.playTop;
+    return {
+      window: [{ x: 626, y: 136, face: 'back' }, { x: 770, y: 136, face: 'back' }],
+      machine: [{ x: 912, y: 434, face: 'back' }, { x: 972, y: 434, face: 'back' }],
+      bar: [{ x: 975, y: 542 }, { x: 1045, y: 542 }, { x: 1115, y: 542 }],
+      sofa: [{ x: 954, y: 720, sit: true, z: 830 }, { x: 1020, y: 720, sit: true, z: 830 }, { x: 1086, y: 720, sit: true, z: 830 }],
+      records: [{ x: 930, y: 914, face: 'back' }],
+      shelf: [{ x: 1100, y: 920, face: 'back' }],
+      darts: [{ x: 120, y: p + 40, mirror: true }],
+      foos: [{ x: 262, y: p + 28 }, { x: 404, y: p + 28 }, { x: 282, y: p + 172, face: 'back' }, { x: 384, y: p + 172, face: 'back' }],
+      pong: [{ x: 486, y: p + 82 }, { x: 782, y: p + 82, mirror: true, syncOffset: 600 }],
+      arcade: [{ x: 64, y: p + 262, face: 'back' }, { x: 144, y: p + 262, face: 'back' }],
+      plant: [{ x: 724, y: p + 214 }],
+    };
+  }
+
+  /** Break activities. Steps run in order; a group activity starts with several colleagues at once. */
+  const ACTIVITIES = {
+    coffee: { label: 'Getting coffee', w: 3, steps: [
+      { zone: 'machine', ms: [4500, 6000], anim: 'brew' },
+      { zone: 'bar', ms: [14000, 22000], prop: 'mug', anim: 'sip', label: 'Coffee at the bar', chat: ['How’s the release going?', 'This roast is good.', 'Lunch later?', 'Did you see the new build?', 'Third coffee today…', 'Any weekend plans?'] },
+    ] },
+    foosball: { label: 'Playing foosball', w: 3, group: [2, 4], steps: [{ zone: 'foos', ms: [20000, 32000], anim: 'foos', chat: ['Goal!', 'Nice shot!', 'Rematch?', 'No spinning!'] }] },
+    pingpong: { label: 'Playing ping-pong', w: 2.5, group: [2, 2], steps: [{ zone: 'pong', ms: [18000, 28000], prop: 'paddle', anim: 'pong', sync: 1200, chat: ['Nice serve!', 'Out!', '11–9!', 'Again?'] }] },
+    darts: { label: 'Playing darts', w: 1.5, steps: [{ zone: 'darts', ms: [12000, 19000], prop: 'dart', anim: 'darts', sync: 2400, chat: ['Bullseye!', 'So close…', 'Triple twenty!'] }] },
+    arcade: { label: 'Playing an arcade game', w: 1.5, steps: [{ zone: 'arcade', ms: [14000, 22000], anim: 'arcade', chat: ['New high score!', 'One more life…'] }] },
+    sofa: { label: 'Relaxing on the sofa', w: 2.5, steps: [{ zone: 'sofa', ms: [16000, 26000], variants: [
+      { prop: 'book', label: 'Reading on the sofa' }, { prop: 'laptop', label: 'Browsing on the sofa' }, { anim: 'nap', label: 'Napping on the sofa' },
+    ] }] },
+    records: { label: 'Putting on a record', w: 1, steps: [
+      { zone: 'records', ms: [5000, 7000], anim: 'records', music: true },
+      { zone: 'sofa', ms: [14000, 22000], prop: 'book', label: 'Reading on the sofa' },
+    ] },
+    shelf: { label: 'Browsing the bookshelf', w: 1, steps: [
+      { zone: 'shelf', ms: [6000, 9000], anim: 'shelf' },
+      { zone: 'sofa', ms: [14000, 22000], prop: 'book', label: 'Reading on the sofa' },
+    ] },
+    plants: { label: 'Watering the plants', w: 1, steps: [{ zone: 'plant', ms: [7000, 10000], prop: 'can', anim: 'water' }] },
+    window: { label: 'Looking out the window', w: 1.5, steps: [{ zone: 'window', ms: [9000, 15000], anim: 'window' }] },
   };
-  const doorXY = () => ({ x: -70, y: stageHeight() - 190, z: 500 });
 
   // ================================================================ state
   const S = {
@@ -132,6 +238,7 @@
     backend.onEvent(onEvent);
     if (backend.onReconnect) backend.onReconnect(loadSnapshot);
     await loadSnapshot();
+    setInterval(breakTick, 1000);
     const [prov, roles] = await Promise.all([backend.get('api/providers').catch(() => null), backend.get('api/roles').catch(() => [])]);
     S.providers = prov?.providers || [];
     S.roles = roles || [];
@@ -194,6 +301,7 @@
       case 'agent.status':
         if (a) {
           a.presence = d;
+          if (d.status !== 'idle' && breaks.has(e.agentId)) endBreak(e.agentId, false); // work comes first
           if (d.status === 'presenting' && d.missionId) {
             // The floor passes to a new speaker: everyone else's bubble in that meeting goes away.
             for (const pid of S.missions.get(d.missionId)?.participants || []) {
@@ -229,8 +337,11 @@
       case 'office.fired':
         leavePerson(e.agentId);
         break;
+      case 'roles.updated':
+        S.roles = d.roles || []; refreshTemplates();
+        break;
       case 'office.renamed':
-        S.name = d.name; $('#officeName').textContent = S.name; document.title = S.name;
+        S.name = d.name; $('#officeName').textContent = S.name; document.title = S.name; fitGhostSign();
         break;
       case 'mission.created':
       case 'mission.updated': {
@@ -311,10 +422,96 @@
 
   // ================================================================ floor rendering
   let sizer;
+  let spotsCache = null;
+  const spots = () => spotsCache || (spotsCache = spotsFor(layout()));
+
+  function sceneryHtml(L) {
+    const { H, playTop: p } = L;
+    // string lights: four sagging spans over the game area
+    const spans = [0, 205, 410, 615].map((x0) => ({ x0, x1: x0 + 205, cx: x0 + 102.5 }));
+    const bulbs = spans.flatMap(({ x0, x1, cx }) => [0.17, 0.39, 0.61, 0.83].map((t) => {
+      const x = (1 - t) ** 2 * x0 + 2 * (1 - t) * t * cx + t ** 2 * x1;
+      const y = (1 - t) ** 2 * 8 + 2 * (1 - t) * t * 40 + t ** 2 * 8;
+      return `<circle cx="${x.toFixed(1)}" cy="${(y + 4).toFixed(1)}" r="3.4"/>`;
+    })).join('');
+    const rods = [['red', 1], ['red', 2], ['blue', 3], ['red', 5], ['blue', 5], ['red', 3], ['blue', 2], ['blue', 1]]
+      .map(([team, n], i) => `<i class="rod ${team}" style="left:${16 + i * 28}px">${Array.from({ length: n }, (_, k) => `<b style="top:${(16 + (96 / (n + 1)) * (k + 1) - 4).toFixed(1)}px"></b>`).join('')}</i>`).join('');
+
+    return `
+      <div class="top-wall brick"></div>
+      <div class="side-wall brick" style="height:${H - WALL_H}px"></div>
+      <div class="ledge"></div>
+      <div class="whiteboard" id="whiteboard" role="button" tabindex="0" aria-label="Mission board"></div>
+      <div class="window" style="left:596px">${skylineSvg(0)}</div>
+      <div class="window" style="left:740px">${skylineSvg(1)}</div>
+      <div class="shaft" style="left:540px"></div><div class="shaft" style="left:684px"></div>
+      <div class="ghost-sign" id="ghostSign"><span>${esc(S.name)}</span></div>
+      <div class="door-way" style="top:${H - 170}px"></div>
+      <div class="barn-door" style="top:${H - 292}px"></div>
+
+      <div class="glass-room" style="left:${MEET.x}px;top:${MEET.y}px;width:${MEET.w}px;height:${MEET.h}px"><div class="glass-back"></div></div>
+      <div class="tv" id="tv"></div>
+      <div class="meet-table" style="left:${MEET_TABLE.x}px;top:${MEET_TABLE.y}px;width:${MEET_TABLE.w}px;height:${MEET_TABLE.h}px;z-index:${MEET_TABLE.y + MEET_TABLE.h}"></div>
+      <div class="glass-front" style="left:${MEET.x}px;top:${MEET.y + MEET.h - 46}px;width:${MEET.w}px;z-index:${MEET.y + MEET.h + 2}"><span class="glass-label">Meeting room</span></div>
+
+      <div class="counter" style="left:888px;top:474px;width:270px;z-index:524">
+        <div class="espresso" id="espresso"><i class="led"></i><i class="cup"></i><i class="steam s1"></i><i class="steam s2"></i><i class="steam s3"></i></div>
+        <i class="grinder"></i><i class="cups"></i><i class="bowl"></i><i class="herbs"></i>
+      </div>
+      <div class="fridge" style="left:1166px;top:430px;z-index:528"></div>
+      <div class="pool" style="left:920px;top:560px"></div>
+      <div class="bar-table" style="left:960px;top:640px;width:220px;z-index:694"></div>
+      <div class="stool" style="left:922px;top:648px;z-index:700"></div>
+      <div class="stool" style="left:1186px;top:648px;z-index:700"></div>
+
+      <div class="rug" style="left:902px;top:800px;width:300px;height:150px"></div>
+      <div class="sofa-back" style="left:942px;top:756px;z-index:770"></div>
+      <div class="sofa-seat" style="left:930px;top:792px;z-index:880"></div>
+      <div class="coffee-table" style="left:1000px;top:884px;z-index:920"></div>
+      <div class="floor-lamp" style="left:902px;top:690px;z-index:812"></div>
+      <div class="plant" style="left:1184px;top:690px;width:44px;height:88px;z-index:780">${plantSvg('fig')}</div>
+      <div class="sideboard" style="left:896px;top:962px;z-index:1006">
+        <i class="speaker l"></i><div class="turntable" id="turntable"><i class="platter"></i><i class="tone-arm"></i></div><div class="notes"><i>♪</i><i>♫</i><i>♪</i></div><i class="speaker r"></i>
+      </div>
+      <div class="bookshelf" style="left:1062px;top:944px;z-index:1012"></div>
+      <div class="floor-stencil" style="left:1062px;top:1030px">Lounge</div>
+
+      <svg class="string-lights" style="top:${p - 8}px" viewBox="0 0 820 50" aria-hidden="true">
+        <path d="${spans.map(({ x0, x1, cx }) => `M${x0} 8 Q${cx} 40 ${x1} 8`).join(' ')}"/>${bulbs}
+      </svg>
+      <div class="darts" id="darts" style="top:${p}px;z-index:${p + 160}">
+        <div class="dartboard"><i class="hit h1"></i><i class="hit h2"></i><i class="hit h3"></i></div>
+        <i class="dart-fly"><svg viewBox="0 0 24 8"><path d="M0 4 L6 3 L6 5 Z" fill="#9AA1A8"/><rect x="6" y="3" width="10" height="2" fill="#2B2B2B"/><path d="M16 4 L23 0 L21 4 L23 8 Z" fill="#E0B020"/></svg></i>
+      </div>
+      <div class="pool" style="left:216px;top:${p + 80}px"></div>
+      <div class="foos" id="foos" style="left:250px;top:${p + 110}px;z-index:${p + 250}">
+        <div class="cab"></div><div class="field"><i class="fball"></i></div><div class="front"></div>${rods}
+      </div>
+      <div class="pong" id="pong" style="left:560px;top:${p + 130}px;z-index:${p + 232}">
+        <div class="top"></div><div class="face"></div><i class="net"></i><i class="pball-x"><i class="pball"></i></i>
+      </div>
+      ${[64, 144].map((x, i) => `<div class="arcade" id="arcade${i}" style="left:${x}px;top:${p + 196}px;z-index:${p + 332}"><div class="cab"></div><div class="marquee"></div><div class="screen"></div><div class="panel"></div></div>`).join('')}
+      <div class="plant" style="left:770px;top:${p + 222}px;width:100px;height:108px;z-index:${p + 336}">${plantSvg('monstera')}</div>
+      <div class="floor-stencil" style="left:330px;top:${p + 316}px">Game room</div>`;
+  }
+
+  function deskHtml(i, a) {
+    const { x, y } = deskXY(i);
+    const st = a ? onBreak(a.profile.id) ? 'break' : (a.presence?.status || 'idle') : '';
+    const busy = a && ['typing', 'working', 'thinking'].includes(st);
+    return `<div class="pool" style="left:${x + 85 - 150}px;top:${y - 70}px"></div>
+      <div class="chair" style="left:${x + 62}px;top:${y - 46}px;z-index:${y + 30}"></div>
+      <div class="desk ${a ? '' : 'vacant'} ${busy ? 'busy' : ''}" data-desk="${i}" ${a ? `data-agent="${a.profile.id}"` : ''} style="left:${x}px;top:${y}px;z-index:${y + 74}">
+        <div class="top"><i class="monitor"><b></b></i><i class="kbd"></i><i class="item item-${i % 4}"></i></div><div class="front"></div>
+        ${a ? `<button class="nameplate" data-agent="${a.profile.id}" title="${esc(a.profile.title)}"><i class="dot ${esc(st)}"></i><span>${esc(a.profile.name)}</span></button>` : ''}
+      </div>`;
+  }
+
   function renderStage() {
     const stage = $('#stage');
-    const H = stageHeight();
-    stage.style.height = H + 'px';
+    const L = layout();
+    spotsCache = null;
+    stage.style.height = L.H + 'px';
     if (!sizer) {
       sizer = document.createElement('div');
       sizer.className = 'stage-sizer';
@@ -326,34 +523,12 @@
 
     const agents = [...S.agents.values()];
     const occupied = new Map(agents.map((a) => [a.profile.desk, a]));
-    const maxSlot = Math.max(-1, ...agents.map((a) => a.profile.desk));
-    const slots = Math.max(COLS * 2, Math.ceil((maxSlot + 2) / COLS) * COLS);
-    const lounge = { x: MEET.x, y: MEET.y + MEET.h + 28, w: MEET.w, h: H - (MEET.y + MEET.h + 28) - 30 };
-
-    let html = `<div class="wall"></div>
-      <div class="door" style="top:${H - 150}px" title="Door"></div>
-      <div class="whiteboard" id="whiteboard" role="button" tabindex="0" aria-label="Mission board"></div>
-      <div class="room meeting" style="left:${MEET.x}px;top:${MEET.y}px;width:${MEET.w}px;height:${MEET.h}px"><span class="room-label">Meeting room</span>
-        <div class="meeting-table" style="left:${MEET.w / 2 - 100}px;top:${MEET.h / 2 - 50}px;width:200px;height:116px"></div></div>
-      <div class="room lounge" style="left:${lounge.x}px;top:${lounge.y}px;width:${lounge.w}px;height:${lounge.h}px"><span class="room-label">Kitchen</span>
-        <div class="sofa" style="left:24px;top:${Math.max(48, lounge.h - 80)}px"></div>
-        <div class="coffee" style="left:${lounge.w - 70}px;top:44px"></div>
-        <div class="plant" style="left:${lounge.w - 64}px;top:${Math.max(120, lounge.h - 70)}px"></div></div>`;
-
-    for (let i = 0; i < slots; i++) {
-      const { x, y, row } = deskXY(i);
-      const a = occupied.get(i);
-      const st = a?.presence?.status || 'idle';
-      html += `<div class="desk ${a ? '' : 'vacant'} ${a && ['typing', 'working', 'thinking'].includes(st) ? 'busy' : ''}" data-desk="${i}" ${a ? `data-agent="${a.profile.id}"` : ''}
-        style="left:${x}px;top:${y}px;z-index:${10 + row * 10 + 5}">
-        <div class="top"><div class="laptop"></div><div class="mug"></div></div><div class="front"></div>
-        ${a ? `<button class="nameplate" data-agent="${a.profile.id}" title="${esc(a.profile.title)}"><i class="dot ${esc(st)}"></i><span>${esc(a.profile.name)}</span></button>` : ''}
-      </div>`;
-    }
+    let html = sceneryHtml(L);
+    for (let i = 0; i < L.slots; i++) html += deskHtml(i, occupied.get(i));
 
     if (agents.length === 0) {
       html += `<div class="empty-office">
-        <h2>An empty office, ready for a team</h2>
+        <h2>An empty loft, ready for a team</h2>
         <p>Hire colleagues one by one — any role, any instructions, any model — or start with a small software team and change it later.</p>
         <div class="row"><button class="btn primary" data-action="hire">Hire your first colleague</button>
         <button class="btn" data-action="starter">Hire a starter team</button></div></div>`;
@@ -361,8 +536,20 @@
 
     stage.innerHTML = html;
     for (const el of people.values()) stage.append(el);
+    // The game area moves down as desks are added; re-seat anyone on a break there.
+    for (const [id, el] of people) if ((el.dataset.key || '').startsWith('spot:')) { el.dataset.key = ''; placePerson(id, true); }
+    fitGhostSign();
     renderWhiteboard();
+    updateProps();
     fitStage();
+  }
+
+  function fitGhostSign() {
+    const el = $('#ghostSign');
+    if (!el) return;
+    el.querySelector('span').textContent = S.name;
+    const n = S.name.length;
+    el.style.fontSize = (n <= 10 ? 46 : n <= 16 ? 38 : n <= 26 ? 30 : 22) + 'px';
   }
 
   function fitStage() {
@@ -376,36 +563,44 @@
     sizer.style.margin = '0 auto';
   }
 
+  // ================================================================ where each person should be
   function personTarget(id) {
     const a = S.agents.get(id);
     if (!a) return null;
     const p = a.presence || { status: 'idle' };
     if (p.status === 'visiting' && p.with && S.agents.has(p.with)) {
-      return { ...visitorXY(S.agents.get(p.with).profile.desk), standing: true, key: 'visit:' + p.with };
+      return { ...visitorXY(S.agents.get(p.with).profile.desk), key: 'visit:' + p.with };
     }
     if ((p.status === 'meeting' || p.status === 'presenting') && p.missionId) {
-      const m = S.missions.get(p.missionId);
-      const list = m?.participants || [];
+      const list = S.missions.get(p.missionId)?.participants || [];
       const k = Math.max(0, list.indexOf(id));
-      return { ...meetingXY(k, list.length || 1), standing: true, key: 'meet:' + p.missionId + ':' + k };
+      return { ...meetingXY(k), key: 'meet:' + p.missionId + ':' + k };
     }
-    return { ...seatXY(a.profile.desk), standing: false, key: 'desk:' + a.profile.desk };
+    const b = p.status === 'idle' ? breaks.get(id) : null;
+    const s = b && spots()[b.zone]?.[b.idx];
+    if (s) {
+      const step = ACTIVITIES[b.act].steps[b.step];
+      const v = b.variant || {};
+      return {
+        x: s.x, y: s.y, z: s.z ?? s.y + 112, face: s.face, sit: s.sit, mirror: s.mirror,
+        prop: v.prop ?? step.prop, anim: v.anim ?? step.anim, sync: step.sync, syncOffset: s.syncOffset,
+        key: `spot:${b.zone}:${b.idx}:${b.act}:${b.step}`,
+      };
+    }
+    return { ...seatXY(a.profile.desk), key: 'desk:' + a.profile.desk };
   }
 
   function createPerson(id) {
     const el = document.createElement('div');
     el.className = 'person';
     el.dataset.agent = id;
+    el.dataset.face = 'front';
     el.tabIndex = 0;
     el.setAttribute('role', 'button');
-    el.innerHTML = `${avatar(S.agents.get(id).profile.look)}<div class="ind"></div>`;
+    el.innerHTML = `<div class="fig">${avatar(S.agents.get(id).profile.look)}<div class="prop"></div></div><div class="ind"></div>`;
     el.addEventListener('transitionend', (ev) => {
-      if (ev.propertyName !== 'left' && ev.propertyName !== 'top') return;
-      el.classList.remove('walking');
-      const t = personTarget(id);
-      el.classList.toggle('standing', !!t?.standing);
-      el.style.zIndex = t?.z ?? 20;
-      if (el.dataset.leaving) { el.remove(); people.delete(id); }
+      if (ev.target !== el || (ev.propertyName !== 'left' && ev.propertyName !== 'top')) return;
+      arrive(el, id);
     });
     people.set(id, el);
     $('#stage').append(el);
@@ -415,8 +610,48 @@
   function refreshPerson(id) {
     const el = people.get(id);
     if (!el) return;
-    el.querySelector('svg').outerHTML = avatar(S.agents.get(id).profile.look);
+    el.querySelector('svg.av').outerHTML = avatar(S.agents.get(id).profile.look, 'full', el.dataset.face || 'front');
     updatePerson(id);
+  }
+
+  function setFace(el, id, face) {
+    if (el.dataset.face === face) return;
+    el.dataset.face = face;
+    const svg = el.querySelector('svg.av');
+    if (svg && S.agents.has(id)) svg.outerHTML = avatar(S.agents.get(id).profile.look, 'full', face);
+  }
+
+  function setAnim(el, anim, dur, offset) {
+    anim = anim || '';
+    if (el.dataset.anim === anim) return;
+    if (el.dataset.anim) el.classList.remove('act-' + el.dataset.anim);
+    el.dataset.anim = anim;
+    if (!anim) return;
+    // Synced animations (ping-pong, darts) share one clock with the table/board so swings meet the ball.
+    el.style.setProperty('--d', dur ? `-${(Date.now() + (offset || 0)) % dur}ms` : `-${Math.floor(Math.random() * 6000)}ms`);
+    el.classList.add('act-' + anim);
+  }
+
+  function setProp(el, prop) {
+    prop = prop || '';
+    if (el.dataset.prop === prop) return;
+    el.dataset.prop = prop;
+    const host = el.querySelector('.prop');
+    const def = PROPS[prop];
+    host.className = 'prop' + (def ? ' ' + def[0] : '');
+    host.innerHTML = def ? def[1] : '';
+  }
+
+  function applyPose(el, id, t) {
+    const face = t.face || 'front';
+    setFace(el, id, face);
+    el.classList.toggle('standing', !t.sit && !t.desk);
+    el.classList.toggle('sitting', !!t.sit);
+    el.classList.toggle('mirror', !!t.mirror);
+    setAnim(el, t.anim, t.sync, t.syncOffset);
+    setProp(el, face === 'back' ? null : t.prop);
+    el.style.zIndex = t.z;
+    updateIndicator(id);
   }
 
   function placePerson(id, instant) {
@@ -424,22 +659,44 @@
     const t = personTarget(id);
     if (!t || el.dataset.leaving) return;
     if (el.dataset.key === t.key) return;
-    const firstPlacement = !el.dataset.key;
+    const first = !el.dataset.key;
     el.dataset.key = t.key;
-    el.classList.toggle('edge-r', t.x > W - 210);
-    el.classList.toggle('edge-l', t.x < 70);
-    if (firstPlacement || instant) {
+    el.classList.toggle('edge-r', t.x > W - 220);
+    el.classList.toggle('edge-l', t.x < 80);
+    if (first || instant) {
       el.style.transition = 'none';
       el.style.left = t.x + 'px'; el.style.top = t.y + 'px';
-      el.style.zIndex = t.z;
-      el.classList.toggle('standing', t.standing);
+      el.classList.remove('walking');
+      applyPose(el, id, t);
       void el.offsetWidth;
       el.style.transition = '';
       return;
     }
+    walkTo(el, id, t.x, t.y, t.prop);
+  }
+
+  /** Walk at a steady pace, facing away from us when heading up the floor. */
+  function walkTo(el, id, x, y, carry) {
+    const x0 = parseFloat(el.style.left) || 0, y0 = parseFloat(el.style.top) || 0;
+    const dist = Math.hypot(x - x0, y - y0);
+    const face = y < y0 - 24 ? 'back' : 'front';
+    setAnim(el, '');
+    el.classList.remove('sitting', 'mirror');
     el.classList.add('walking', 'standing');
-    el.style.zIndex = 450;
-    el.style.left = t.x + 'px'; el.style.top = t.y + 'px';
+    setFace(el, id, face);
+    setProp(el, face === 'back' ? null : carry);
+    el.style.zIndex = 4500;
+    if (dist < 2) { el.style.left = x + 'px'; el.style.top = y + 'px'; arrive(el, id); return; }
+    el.style.transitionDuration = Math.min(3.6, Math.max(0.5, dist / 230)).toFixed(2) + 's';
+    el.style.left = x + 'px'; el.style.top = y + 'px';
+  }
+
+  function arrive(el, id) {
+    el.classList.remove('walking');
+    if (el.dataset.leaving) { el.remove(); people.delete(id); return; }
+    const t = personTarget(id);
+    if (t && t.key === el.dataset.key) applyPose(el, id, t);
+    updateProps();
   }
 
   function enterPerson(id) {
@@ -454,17 +711,16 @@
   }
 
   function leavePerson(id) {
+    endBreak(id, false);
     const el = people.get(id);
     S.agents.delete(id);
     if (S.selected === id) closeDrawer();
     if (el) {
       const door = doorXY();
       el.dataset.leaving = '1';
-      el.classList.add('walking', 'standing');
       el.querySelector('.ind').innerHTML = '';
-      el.style.zIndex = 450;
-      el.style.left = door.x + 'px'; el.style.top = door.y + 'px';
-      setTimeout(() => { if (people.get(id) === el) { el.remove(); people.delete(id); } }, 1600);
+      walkTo(el, id, door.x, door.y, null);
+      setTimeout(() => { if (people.get(id) === el) { el.remove(); people.delete(id); } }, 4200);
     }
     renderStage(); updateHeadcount();
   }
@@ -479,6 +735,20 @@
     updatePerson(id);
   }
 
+  function updateIndicator(id) {
+    const a = S.agents.get(id);
+    const el = people.get(id);
+    if (!a || !el) return;
+    const st = a.presence?.status || 'idle';
+    const b = S.bubbles.get(id);
+    const ind = el.querySelector('.ind');
+    if (b && b.until > Date.now()) ind.innerHTML = `<div class="bubble ${b.kind === 'chat' ? 'small' : ''}">${esc(tail(b.text, 170))}</div>`;
+    else if (st === 'working' && a.presence.detail) ind.innerHTML = `<div class="chip">${esc(a.presence.detail)}</div>`;
+    else if (st === 'thinking' || st === 'visiting') ind.innerHTML = `<div class="bubble thought"><span class="thinking-dots"><i></i><i></i><i></i></span></div>`;
+    else if (el.dataset.anim === 'nap') ind.innerHTML = '<span class="zzz">z</span>';
+    else ind.innerHTML = '';
+  }
+
   function updatePerson(id) {
     const a = S.agents.get(id);
     if (!a) return;
@@ -488,35 +758,156 @@
     const st = a.presence?.status || 'idle';
     for (const c of ['thinking', 'typing', 'working', 'visiting', 'meeting', 'presenting']) el.classList.toggle(c, st === c);
     el.classList.toggle('selected', S.selected === id);
-    el.setAttribute('aria-label', `${a.profile.name}, ${a.profile.title || 'colleague'} — ${statusText(a.presence)}`);
-
-    const b = S.bubbles.get(id);
-    const ind = el.querySelector('.ind');
-    if (b && b.until > Date.now()) ind.innerHTML = `<div class="bubble">${esc(tail(b.text, 170))}</div>`;
-    else if (st === 'working' && a.presence.detail) ind.innerHTML = `<div class="chip">${esc(a.presence.detail)}</div>`;
-    else if (st === 'thinking' || st === 'visiting') ind.innerHTML = `<div class="bubble thought"><span class="thinking-dots"><i></i><i></i><i></i></span></div>`;
-    else ind.innerHTML = '';
-
+    el.setAttribute('aria-label', `${a.profile.name}, ${a.profile.title || 'colleague'} — ${statusText(a.presence, id)}`);
+    updateIndicator(id);
     const desk = document.querySelector(`.desk[data-agent="${id}"]`);
     if (desk) desk.classList.toggle('busy', ['typing', 'working', 'thinking'].includes(st));
   }
 
   function updateNameplate(id) {
+    const a = S.agents.get(id);
     const dot = document.querySelector(`.nameplate[data-agent="${id}"] .dot`);
-    if (dot) dot.className = `dot ${S.agents.get(id)?.presence?.status || 'idle'}`;
-    if (S.selected === id && S.drawer === 'agent') {
+    if (dot) dot.className = `dot ${onBreak(id) ? 'break' : a?.presence?.status || 'idle'}`;
+    if (S.selected === id && S.drawer === 'agent' && a) {
       const line = $('#drawerStatus');
-      if (line) line.textContent = statusText(S.agents.get(id).presence);
+      if (line) line.textContent = statusText(a.presence, id);
     }
   }
 
-  function statusText(p) {
+  function statusText(p, id) {
     const s = p?.status || 'idle';
+    if (s === 'idle') {
+      const b = id && breaks.get(id);
+      if (!b) return 'At their desk';
+      const step = ACTIVITIES[b.act].steps[b.step];
+      return `On a break · ${(b.variant?.label || step.label || ACTIVITIES[b.act].label).toLowerCase()}`;
+    }
     const withName = p?.with ? nameOf(p.with) : p?.detail;
     return {
-      idle: 'Free', thinking: 'Thinking', typing: 'Writing', working: p?.detail ? clip(p.detail, 40) : 'Working',
+      thinking: 'Thinking', typing: 'Writing', working: p?.detail ? clip(p.detail, 40) : 'Working',
       visiting: `Talking with ${withName || 'a colleague'}`, meeting: 'In a meeting', presenting: 'Speaking in a meeting',
     }[s] || s;
+  }
+
+  // ================================================================ breaks: what idle colleagues get up to
+  const breaks = new Map();     // agentId -> { id, act, step, zone, idx, until, group, variant }
+  const spotTaken = new Map();  // 'zone:idx' -> agentId
+  const idleClock = new Map();  // agentId -> { since, wait }
+  const groups = new Map();     // groupId -> Set(agentId)
+  let musicUntil = 0;
+  const rand = (a, b) => a + Math.random() * (b - a);
+  const shuffle = (arr) => arr.map((v) => [Math.random(), v]).sort((x, y) => x[0] - y[0]).map((x) => x[1]);
+  const onBreak = (id) => breaks.has(id) && (S.agents.get(id)?.presence?.status || 'idle') === 'idle';
+  const freeSpots = (zone) => (spots()[zone] || []).map((_, i) => i).filter((i) => !spotTaken.has(`${zone}:${i}`));
+  const atDeskAndFree = (id) => {
+    const a = S.agents.get(id);
+    const el = people.get(id);
+    return a && (a.presence?.status || 'idle') === 'idle' && !breaks.has(id) && el && !el.dataset.leaving && !el.classList.contains('walking');
+  };
+
+  function assign(id, act, stepIdx, idx, until, group) {
+    const step = ACTIVITIES[act].steps[stepIdx];
+    const b = { id, act, step: stepIdx, zone: step.zone, idx, until, group, variant: step.variants ? pick(step.variants) : null };
+    breaks.set(id, b);
+    spotTaken.set(`${step.zone}:${idx}`, id);
+    idleClock.delete(id);
+    updatePerson(id);
+    updateNameplate(id);
+  }
+
+  function startBreak(id) {
+    const now = Date.now();
+    const mates = [...S.agents.keys()].filter((o) => o !== id && atDeskAndFree(o) && now - (idleClock.get(o)?.since ?? now) > 2500);
+    const options = Object.entries(ACTIVITIES).filter(([, act]) => {
+      const need = act.group ? act.group[0] : 1;
+      return freeSpots(act.steps[0].zone).length >= need && (!act.group || mates.length >= need - 1);
+    });
+    if (!options.length) return false;
+    let r = Math.random() * options.reduce((sum, [, a]) => sum + a.w, 0);
+    const [actId, act] = options.find(([, a]) => (r -= a.w) <= 0) || options[0];
+    const step = act.steps[0];
+    const until = now + rand(...step.ms);
+    if (!act.group) { assign(id, actId, 0, pick(freeSpots(step.zone)), until, null); return true; }
+
+    const free = freeSpots(step.zone);
+    const max = Math.min(act.group[1], free.length, mates.length + 1);
+    const size = act.group[0] + Math.floor(Math.random() * (max - act.group[0] + 1));
+    const members = [id, ...shuffle(mates).slice(0, size - 1)];
+    // Foosball: fill opposite sides first so a 1-on-1 game faces off across the table.
+    const order = step.zone === 'foos' ? [0, 3, 1, 2].filter((i) => free.includes(i)) : free;
+    const gid = `g${now}${Math.random()}`;
+    groups.set(gid, new Set(members));
+    members.forEach((m, k) => assign(m, actId, 0, order[k], until, gid));
+    return true;
+  }
+
+  function endBreak(id, chain) {
+    const b = breaks.get(id);
+    if (!b) return;
+    if (spotTaken.get(`${b.zone}:${b.idx}`) === id) spotTaken.delete(`${b.zone}:${b.idx}`);
+    breaks.delete(id);
+    if (b.group) {
+      const g = groups.get(b.group);
+      g?.delete(id);
+      if (g && g.size === 0) groups.delete(b.group);
+      // Not enough players left: the others wrap up too.
+      else if (g && g.size < ACTIVITIES[b.act].group[0]) for (const o of g) { const ob = breaks.get(o); if (ob) ob.until = Math.min(ob.until, Date.now() + 1500); }
+    }
+    idleClock.set(id, { since: Date.now(), wait: chain ? rand(1500, 4000) : rand(9000, 24000) });
+    if (S.agents.has(id)) { updatePerson(id); updateNameplate(id); }
+  }
+
+  function advance(id, b) {
+    const steps = ACTIVITIES[b.act].steps;
+    const next = steps[b.step + 1];
+    const free = next ? freeSpots(next.zone) : [];
+    if (!next || !free.length) { endBreak(id, Math.random() < 0.25); return; }
+    if (spotTaken.get(`${b.zone}:${b.idx}`) === id) spotTaken.delete(`${b.zone}:${b.idx}`);
+    assign(id, b.act, b.step + 1, pick(free), Date.now() + rand(...next.ms), null);
+  }
+
+  function breakTick() {
+    const now = Date.now();
+    for (const [id, a] of S.agents) {
+      const idle = (a.presence?.status || 'idle') === 'idle';
+      const b = breaks.get(id);
+      if (!idle) { if (b) endBreak(id, false); idleClock.delete(id); continue; }
+      const el = people.get(id);
+      if (!el || el.dataset.leaving) continue;
+      const walking = el.classList.contains('walking');
+      if (b) {
+        if (now >= b.until) { advance(id, b); continue; }
+        const step = ACTIVITIES[b.act].steps[b.step];
+        if (!walking && step.music) musicUntil = Math.max(musicUntil, now + 120000);
+        if (!walking && step.chat && !S.bubbles.has(id) && Math.random() < 0.035) say(id, pick(step.chat), 'chat', 2400);
+        continue;
+      }
+      const clock = idleClock.get(id);
+      if (!clock) { idleClock.set(id, { since: now, wait: rand(3000, 9000) }); continue; }
+      if (walking || now - clock.since < clock.wait) continue;
+      if (Math.random() < 0.2 || !startBreak(id)) idleClock.set(id, { since: now, wait: rand(6000, 14000) });
+    }
+    updateProps();
+  }
+
+  /** Furniture reacts to whoever is using it. */
+  function updateProps() {
+    const arrived = (zone) => [...spotTaken].filter(([k, id]) => k.startsWith(zone + ':') && breaks.get(id)?.zone === zone && people.get(id) && !people.get(id).classList.contains('walking')).map(([, id]) => breaks.get(id).idx);
+    const set = (sel, on, cls = 'playing', dur = 0) => {
+      const el = document.querySelector(sel);
+      if (!el) return;
+      if (on && !el.classList.contains(cls) && dur) el.style.setProperty('--d', `-${Date.now() % dur}ms`);
+      el.classList.toggle(cls, !!on);
+    };
+    set('#espresso', arrived('machine').length > 0, 'brewing');
+    set('#foos', arrived('foos').length >= 2, 'playing', 4800);
+    set('#pong', arrived('pong').length >= 2, 'playing', 1200);
+    set('#darts', arrived('darts').length >= 1, 'playing', 7200);
+    const arc = arrived('arcade');
+    set('#arcade0', arc.includes(0));
+    set('#arcade1', arc.includes(1));
+    set('#turntable', Date.now() < musicUntil);
+    set('#tv', [...S.agents.values()].some((a) => ['meeting', 'presenting'].includes(a.presence?.status)), 'on');
   }
 
   function renderWhiteboard() {
@@ -654,7 +1045,7 @@
     host.innerHTML = `<div class="drawer-inner">
       <div class="drawer-head">
         <div class="portrait">${avatar(p.look, 'bust')}</div>
-        <div><h3>${esc(p.name)}</h3><p>${esc(p.title || 'Colleague')}</p><p id="drawerStatus">${esc(statusText(a.presence))}</p></div>
+        <div><h3>${esc(p.name)}</h3><p>${esc(p.title || 'Colleague')}</p><p id="drawerStatus">${esc(statusText(a.presence, p.id))}</p></div>
         <button class="btn ghost close" data-action="close-drawer" aria-label="Close">✕</button>
       </div>
       <div class="tabs" role="tablist">
@@ -712,6 +1103,8 @@
       </div>
       <label class="field"><span>Instructions</span><textarea data-field="persona" maxlength="12000" placeholder="What they're expert in, how they work, what they should never do.">${esc(p.persona)}</textarea>
         <small>This is the whole job description. Change it any time; it applies from their next turn.</small></label>
+      ${mode === 'hire' ? `<label class="field"><span>Role summary</span><input data-field="summary" maxlength="200" value="${esc(p.summary)}" placeholder="One line for the role card">
+        <small>Only used if you save this as a role.</small></label>` : ''}
       <div class="two">
         <label class="field"><span>Model provider</span><select data-field="provider">
           <option value="">Office default (${esc(S.defaultProvider)})</option>
@@ -729,6 +1122,7 @@
       ${mode === 'edit' ? `<div style="display:flex;gap:8px;justify-content:space-between;align-items:center;margin-top:4px">
         <button type="button" class="btn danger" data-action="fire">Let ${esc(p.name)} go</button>
         <span class="dlg-error" data-error></span>
+        <button type="button" class="btn" data-action="save-role">Save as role</button>
         <button type="button" class="btn primary" data-action="save-profile">Save changes</button></div>` : ''}
     </div>`;
   }
@@ -762,6 +1156,8 @@
         draft.name = freshName();
         root.querySelector('[data-field="name"]').value = draft.name;
         updateHireButton(draft);
+      } else if (btn.dataset.action === 'save-role') {
+        await saveRole(draft, root.querySelector('[data-error]'));
       } else if (btn.dataset.action === 'save-profile') {
         try { await backend.put(`api/agents/${draft.id}`, draft); toast('Saved.'); }
         catch (err) { root.querySelector('[data-error]').textContent = err.message; }
@@ -787,30 +1183,35 @@
 
   // ================================================================ hire dialog
   let hireDraft = null;
+  let hirePicked = ''; // title of the role template the draft started from
   function openHire() {
     const dlg = $('#dlgHire');
-    hireDraft = { name: freshName(), title: '', persona: '', provider: '', model: '', look: randomLook(), can: { files: true, shell: false, web: false, delegate: true } };
+    hireDraft = { name: freshName(), title: '', summary: '', persona: '', provider: '', model: '', look: randomLook(), can: { files: true, shell: false, web: false, delegate: true } };
+    hirePicked = '';
     dlg.innerHTML = `<form class="dlg" method="dialog" data-form="hire">
       <div class="dlg-head"><h2 id="hireTitle">Hire a colleague</h2><button type="button" class="btn ghost close" data-action="close-dialog" aria-label="Close">✕</button></div>
       <div class="dlg-body"><div class="hire-grid">
         <div><div class="field" style="margin-bottom:6px"><span>Start from a role</span><small>Optional — fills in the form, which you can then change.</small></div>
-          <div class="templates">
-            <button type="button" class="template" data-template="-1" aria-pressed="true"><b>Blank</b><span>Write the role yourself.</span></button>
-            ${S.roles.map((r, i) => `<button type="button" class="template" data-template="${i}" aria-pressed="false"><b>${esc(r.title)}</b><span>${esc(r.summary)}</span></button>`).join('')}
-          </div></div>
+          <div class="templates">${templatesHtml()}</div></div>
         <div id="hireForm">${profileFormHtml(hireDraft, 'hire')}</div>
       </div></div>
       <div class="dlg-foot"><span class="dlg-error" data-error></span>
+        <button type="button" class="btn" data-action="save-hire-role" title="Keep this title, instructions, abilities and outfit as a role template">Save as role</button>
         <button type="button" class="btn" data-action="close-dialog">Cancel</button>
         <button class="btn primary" id="hireSubmit">Hire ${esc(hireDraft.name)}</button></div>
     </form>`;
     wireProfileForm($('#hireForm', dlg), hireDraft, 'hire');
-    dlg.querySelector('.templates').addEventListener('click', (ev) => {
+    dlg.querySelector('[data-action="save-hire-role"]').addEventListener('click', () => saveRole(hireDraft, dlg.querySelector('.dlg-foot [data-error]')));
+    dlg.querySelector('.templates').addEventListener('click', async (ev) => {
+      const del = ev.target.closest('[data-delete-role]');
+      if (del) { await deleteRole(del, dlg.querySelector('.dlg-foot [data-error]')); return; }
       const b = ev.target.closest('[data-template]');
       if (!b) return;
       dlg.querySelectorAll('[data-template]').forEach((x) => x.setAttribute('aria-pressed', x === b));
       const r = S.roles[+b.dataset.template];
+      hirePicked = r?.title || '';
       hireDraft.title = r?.title || '';
+      hireDraft.summary = r?.summary || '';
       hireDraft.persona = r?.persona || '';
       if (r?.can) hireDraft.can = { ...hireDraft.can, ...r.can };
       if (r?.look) hireDraft.look = { ...hireDraft.look, ...r.look };
@@ -819,6 +1220,58 @@
     });
     dlg.showModal();
     dlg.querySelector('[data-field="name"]').focus();
+  }
+
+  function templatesHtml() {
+    const picked = hirePicked.toLowerCase();
+    return `<button type="button" class="template" data-template="-1" aria-pressed="${!picked}"><b>Blank</b><span>Write the role yourself.</span></button>
+      ${S.roles.map((r, i) => `<div class="template-item">
+        <button type="button" class="template" data-template="${i}" aria-pressed="${r.title.toLowerCase() === picked}">
+          <b>${esc(r.title)}${r.custom ? ` <em class="role-tag">${r.replacesBuiltIn ? 'edited' : 'yours'}</em>` : ''}</b><span>${esc(r.summary)}</span></button>
+        ${r.custom ? `<button type="button" class="template-del" data-delete-role="${esc(r.id)}" data-reset="${r.replacesBuiltIn ? '1' : ''}"
+          title="${r.replacesBuiltIn ? 'Reset to the built-in role' : 'Delete this role'}" aria-label="${r.replacesBuiltIn ? 'Reset' : 'Delete'} ${esc(r.title)}">${r.replacesBuiltIn ? '↺' : '✕'}</button>` : ''}
+      </div>`).join('')}`;
+  }
+
+  function refreshTemplates() {
+    const list = $('#dlgHire')?.open ? $('#dlgHire .templates') : null;
+    if (list) list.innerHTML = templatesHtml();
+  }
+
+  async function reloadRoles() {
+    try { S.roles = (await backend.get('api/roles')) || []; refreshTemplates(); } catch { /* the roles.updated event will catch up */ }
+  }
+
+  /** Saves the draft's title, instructions, abilities and outfit as a role (updates the owner's role with that title). */
+  async function saveRole(draft, errEl) {
+    errEl.textContent = '';
+    const title = (draft.title || '').trim();
+    if (!title) { errEl.textContent = 'Give the role a title first.'; return; }
+    const known = S.roles.find((r) => r.title.toLowerCase() === title.toLowerCase());
+    const summary = (draft.summary || '').trim() || known?.summary || clip((draft.persona || '').split(/(?<=[.!?])\s/)[0], 140);
+    try {
+      const saved = await backend.post('api/roles', { title, summary, persona: draft.persona, can: draft.can, look: { shirt: draft.look.shirt, accessory: draft.look.accessory } });
+      if (draft === hireDraft) hirePicked = saved.title;
+      await reloadRoles();
+      toast(known ? `Updated the ${saved.title} role.` : `Saved ${saved.title} as a role.`);
+    } catch (e) { errEl.textContent = e.message; }
+  }
+
+  async function deleteRole(btn, errEl) {
+    errEl.textContent = '';
+    // Two-step, like letting someone go: first click arms, second click deletes.
+    if (btn.dataset.armed !== '1') {
+      btn.dataset.armed = '1';
+      btn.textContent = btn.dataset.reset ? 'Reset?' : 'Delete?';
+      setTimeout(() => { if (btn.isConnected && btn.dataset.armed) refreshTemplates(); }, 4000);
+      return;
+    }
+    const role = S.roles.find((r) => r.id === btn.dataset.deleteRole);
+    try {
+      await backend.del(`api/roles/${encodeURIComponent(btn.dataset.deleteRole)}`);
+      await reloadRoles();
+      if (role) toast(btn.dataset.reset ? `${role.title} is back to the built-in role.` : `Deleted the ${role.title} role.`);
+    } catch (e) { errEl.textContent = e.message; }
   }
 
   function updateHireButton(draft) {
@@ -831,7 +1284,8 @@
     err.textContent = '';
     if (!hireDraft.name.trim()) { err.textContent = 'Give them a name.'; return; }
     try {
-      const hired = await backend.post('api/agents', hireDraft);
+      const { summary, ...profile } = hireDraft;
+      const hired = await backend.post('api/agents', profile);
       $('#dlgHire').close();
       toast(`${hired.name} joined the office.`);
     } catch (e) { err.textContent = e.message; }
@@ -840,7 +1294,7 @@
   async function hireStarterTeam() {
     const want = ['Project Manager', 'Software Engineer', 'QA Engineer', 'Product Designer'];
     for (const title of want) {
-      const r = S.roles.find((x) => x.title === title);
+      const r = S.roles.find((x) => x.title.toLowerCase() === title.toLowerCase());
       if (!r) continue;
       const look = { ...randomLook(), ...(r.look || {}) };
       try { await backend.post('api/agents', { name: freshName(), title: r.title, persona: r.persona, provider: '', model: '', look, can: r.can }); }

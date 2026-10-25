@@ -1,13 +1,15 @@
 # Agent Office
 
-A team of AI colleagues in an office you can watch. Each colleague is a
+A team of AI colleagues in a loft office you can watch. Each colleague is a
 [Microsoft Agent Framework](https://github.com/microsoft/agent-framework) agent; the browser
 shows them as people at desks: typing, thinking, walking over to ask each other things, and
 gathering in the meeting room. Hire anyone for any role, point the team at any folder, and give
 them a mission.
 
 Nothing about the team is hard-coded. A colleague is just data: name, role, instructions, model,
-abilities and looks. The role templates in the hire dialog are optional starting points.
+abilities and looks. The role templates in the hire dialog are optional starting points, and you
+can add your own: fill in the hire form (or open a colleague's profile) and click **Save as role**.
+Saving under a built-in's title replaces it; **↺** on its card brings the built-in back.
 
 ```
 Browser  ── REST: hire, missions, messages ──►  ASP.NET Core
@@ -89,6 +91,18 @@ with the full history.
 
 **Chats.** The *Chat* tab in a colleague's drawer is a 1:1 conversation with memory.
 
+**Breaks.** The floor is a loft: brick walls, factory windows, a café, a game room and a
+lounge. When a colleague has nothing to do, they go on a break by themselves:
+
+- make an espresso and drink it at the bar
+- play foosball or ping-pong with whoever else is free
+- play darts or an arcade machine
+- put on a record, read or nap on the sofa
+- water the plants, or look out the window
+
+Work always comes first: when they're asked to do something, they head straight back to their desk.
+Breaks are purely visual. They run in the browser and cost no tokens.
+
 **The board.** Every mission has a board, which shows on the office whiteboard as sticky notes.
 Agents manage it with `board_add`, `board_update` and `board_list`.
 
@@ -135,7 +149,7 @@ src/AgentOffice/
     ClaudeCliChatClient.cs   IChatClient over `claude -p` (uses the CLI's login, no API key)
     ClaudeCliToolHost.cs     minimal MCP endpoint that lends a turn's tools to the CLI
     SimulatedChatClient.cs   canned model for trying things out
-  Data/roles.json            optional role templates for the hire dialog
+  Data/roles.json            built-in role templates (yours are saved in office.json)
   wwwroot/                   the office UI (vanilla JS, no build step)
     demo.js                  in-browser stand-in for the server (?demo or no API)
 tools/sync-demo.mjs          copies roles.json into demo.js; --bundle makes a single-file preview
@@ -157,12 +171,14 @@ the folder to start fresh.
 | GET    | `/api/missions/{id}`          | Mission + event log                                  |
 | POST   | `/api/missions/{id}/messages` | Follow-up from you                                   |
 | POST   | `/api/missions/{id}/cancel`   | Cancel                                               |
-| GET    | `/api/roles`, `/api/providers`| Hire-dialog data                                     |
+| GET    | `/api/roles`, `/api/providers`| Hire-dialog data (built-in roles merged with yours)  |
+| POST   | `/api/roles`                  | Add a role, or update yours with that title: `{ title, summary, persona, can, look: { shirt, accessory } }` |
+| DELETE | `/api/roles/{id}`             | Delete one of your roles (a replaced built-in comes back) |
 
 SignalR hub `/hub` pushes `event` messages `{ seq, ts, kind, missionId, agentId, data }`. Kinds
 include `agent.status`, `agent.delta`, `agent.said`, `agent.tool`, `agent.tool_result`,
 `agent.visit`, `agent.return`, `board.updated`, `workspace.file`, `mission.*`, `meeting.*` and
-`office.*`.
+`office.*` and `roles.updated`.
 
 ## Where to take it next
 

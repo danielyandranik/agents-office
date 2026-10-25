@@ -13,7 +13,7 @@ window.DemoOffice = (() => {
   class Cancelled extends Error {}
 
   function create() {
-    const state = { name: 'Demo Office', agents: [], missions: [] };
+    const state = { name: 'Demo Office', agents: [], missions: [], roles: [] };
     const presence = new Map();
     const active = new Map();
     const runs = new Map();       // missionId -> { cancelled }
@@ -42,6 +42,15 @@ window.DemoOffice = (() => {
     const sleep = (ms, run) => new Promise((res, rej) => setTimeout(() => (run.cancelled ? rej(new Cancelled()) : res()), ms));
     const agent = (id) => state.agents.find((a) => a.id === id);
     const mission = (id) => state.missions.find((m) => m.id === id);
+    // Built-ins keep their place; the owner's role with the same title replaces one, others go at the end.
+    const roleList = () => {
+      const mine = (r, replacesBuiltIn) => ({ ...clone(r), custom: true, replacesBuiltIn });
+      const builtIn = new Set(ROLES.map((r) => r.title.toLowerCase()));
+      return [
+        ...ROLES.map((b) => { const r = state.roles.find((x) => x.title.toLowerCase() === b.title.toLowerCase()); return r ? mine(r, true) : { id: null, ...clone(b), custom: false, replacesBuiltIn: false }; }),
+        ...state.roles.filter((r) => !builtIn.has(r.title.toLowerCase())).map((r) => mine(r, false)),
+      ];
+    };
     const touch = (m, patch) => { Object.assign(m, patch, { updatedAt: new Date().toISOString() }); emit('mission.updated', m.id, null, m); };
 
     // ------------------------------------------------------------ office
@@ -249,7 +258,22 @@ window.DemoOffice = (() => {
         { id: 'ollama', label: 'Ollama (local)', configured: false, defaultModel: '', models: [] },
         { id: 'simulated', label: 'Simulated (no API key, for trying the office)', configured: true, defaultModel: 'simulated', models: ['simulated'] },
       ] })],
-      ['GET', /^api\/roles$/, () => ROLES],
+      ['GET', /^api\/roles$/, () => roleList()],
+      ['POST', /^api\/roles$/, (_, b) => {
+        const title = String(b.title || '').trim();
+        if (!title || title.length > 80) throw new Error('A role needs a title (max 80 characters).');
+        let r = state.roles.find((x) => x.title.toLowerCase() === title.toLowerCase());
+        if (!r) { r = { id: rid('rl') }; state.roles.push(r); }
+        Object.assign(r, { title, summary: clip(b.summary, 200), persona: b.persona || '', can: { ...(b.can || {}) }, look: { shirt: '#3E7CB1', accessory: 'none', ...(b.look || {}) } });
+        emit('roles.updated', null, null, { roles: roleList() });
+        return roleList().find((x) => x.id === r.id);
+      }],
+      ['DELETE', /^api\/roles\/([^/]+)$/, ([id]) => {
+        if (!state.roles.some((r) => r.id === id)) throw new Error("No such role. Built-in roles can't be deleted.");
+        state.roles = state.roles.filter((r) => r.id !== id);
+        emit('roles.updated', null, null, { roles: roleList() });
+        return null;
+      }],
       ['POST', /^api\/agents$/, (_, b) => hire(b)],
       ['PUT', /^api\/agents\/([^/]+)$/, ([id], b) => {
         const a = agent(id); if (!a) throw new Error('No such colleague.');
@@ -321,6 +345,25 @@ window.DemoOffice = (() => {
       const m = newMission({ title: 'Password reset for the customer portal', goal: 'Add password reset to the customer portal. Email link, 30-minute expiry, tests included.', mode: 'delegate', leadId: state.agents[0].id, participants: [state.agents[0].id] });
       launch(m, m.goal);
     }, 1600);
+
+    // Keep the demo office alive: when nothing is running for a while, someone picks up a small job.
+    const chores = [
+      ['Fix the flaky checkout test', 'The checkout integration test fails about one run in ten. Find out why and fix it.'],
+      ['Speed up the dashboard query', 'The orders dashboard takes 4 seconds to load. Find the slow query and fix it.'],
+      ['Write release notes for 2.3', 'Write release notes for version 2.3 from the merged changes.'],
+      ['Add rate limiting to the login API', 'Limit failed login attempts per account and per IP, with tests.'],
+      ['Review the new onboarding flow', 'Review the new onboarding screens for clarity and accessibility.'],
+    ];
+    let quietSince = Date.now();
+    setInterval(() => {
+      if (runs.size > 0 || state.agents.length === 0) { quietSince = Date.now(); return; }
+      if (Date.now() - quietSince < 75000) return;
+      const [title, goal] = pick(chores);
+      const lead = pick(state.agents);
+      const m = newMission({ title, goal, mode: 'delegate', leadId: lead.id, participants: [lead.id] });
+      launch(m, goal);
+      quietSince = Date.now();
+    }, 5000);
 
     return {
       demo: true,

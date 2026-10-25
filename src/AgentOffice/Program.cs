@@ -27,6 +27,7 @@ builder.Services.AddProblemDetails();
 
 builder.Services.AddSingleton<OfficeStore>();
 builder.Services.AddSingleton<EventBus>();
+builder.Services.AddSingleton<RoleCatalog>();
 builder.Services.AddSingleton<ClaudeCliToolHost>();
 builder.Services.AddSingleton<ChatClientFactory>();
 builder.Services.AddSingleton<OfficeRuntime>();
@@ -80,12 +81,9 @@ api.MapPut("/office/name", (OfficeStore store, EventBus bus, RenameRequest req) 
 api.MapGet("/providers", (ChatClientFactory clients) => Results.Ok(new { @default = clients.DefaultProvider, providers = clients.Describe() }));
 
 // ---- role templates: optional starting points for the hire dialog, not a fixed org chart
-api.MapGet("/roles", (IHostEnvironment env) =>
-{
-    var file = Path.Combine(AppContext.BaseDirectory, "Data", "roles.json");
-    if (!File.Exists(file)) file = Path.Combine(env.ContentRootPath, "Data", "roles.json");
-    return File.Exists(file) ? Results.Text(File.ReadAllText(file), "application/json") : Results.Ok(Array.Empty<object>());
-});
+api.MapGet("/roles", (RoleCatalog roles) => Results.Ok(roles.List()));
+api.MapPost("/roles", (RoleCatalog roles, RoleTemplate role) => Results.Ok(roles.Save(role)));
+api.MapDelete("/roles/{id}", (RoleCatalog roles, string id) => { roles.Delete(id); return Results.NoContent(); });
 
 // ---- colleagues
 api.MapPost("/agents", (OfficeRuntime runtime, AgentProfile candidate) => Results.Ok(runtime.Hire(candidate)));
