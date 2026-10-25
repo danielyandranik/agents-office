@@ -141,6 +141,8 @@
 }
 
 * { box-sizing: border-box; }
+/* `hidden` must win over any display rule (the board, form fields…) */
+[hidden] { display: none !important; }
 html, body { height: 100%; }
 body {
   margin: 0;
