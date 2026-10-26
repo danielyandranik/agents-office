@@ -65,6 +65,31 @@ Or set it per colleague in the hire/profile form. Providers, all configured unde
 
 Mixing is fine: a cheap model for coordination, a strong one for review.
 
+### Run more than one office
+
+Each office is an ASP.NET Core environment with its own `appsettings.<Name>.json`: port, data folder, work
+folders, skills folder, Claude token and (optionally) Telegram bot. Two launch profiles are set up, **Personal**
+(port 5080, `office-data`) and **Work** (port 5081, `office-data-work`, `~/agent-office-work`):
+
+```bash
+dotnet run --launch-profile Personal   # http://localhost:5080 (also what a plain `dotnet run` starts)
+dotnet run --launch-profile Work       # http://localhost:5081
+```
+
+The per-office files are local and git-ignored, because they hold tokens; copy
+[`appsettings.Example.json`](src/AgentOffice/appsettings.Example.json) to start one.
+
+**Claude per office.** Run `claude setup-token`, sign in with the account that office should use, and paste the
+token into `Providers:ClaudeCli:OAuthToken`. The office then signs in with that token only, with the CLI's
+config kept in its data folder, so nothing comes from the account logged in on this machine. An empty
+`"OAuthToken": ""` means Claude is off for that office until you add one; leaving the key out entirely uses the
+machine's login instead (or set `Providers:ClaudeCli:ConfigDir` to pick a Claude Code config folder).
+
+**Telegram per office.** One bot can only be used by one running app, so give each office its own:
+`Telegram:BotToken` in its settings file, or `dotnet user-secrets set "Work:Telegram:BotToken" "…"` (secrets
+under a section named after the office apply to that office only). Environment variables and command-line
+arguments override everything.
+
 ### Run it from Telegram
 
 The office can be driven from a Telegram chat: talk to colleagues, start missions and meetings,
@@ -73,7 +98,8 @@ hosting. The app long-polls Telegram, so it only makes outgoing requests and wor
 while it's running.
 
 1. In Telegram, open [@BotFather](https://t.me/BotFather), send `/newbot`, and copy the token.
-2. Store it: `dotnet user-secrets set "Telegram:BotToken" "123456:ABC…"`, then restart the app.
+2. Store it: `dotnet user-secrets set "Telegram:BotToken" "123456:ABC…"` (or `"Work:Telegram:BotToken"` for one
+   office only), then restart the app.
 3. Click the paper-plane button in the top bar, **Pair a chat**, and open the bot from there (or send it
    `/pair <code>`). Codes work once, for 10 minutes; only paired private chats are answered.
 

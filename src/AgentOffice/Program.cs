@@ -7,8 +7,16 @@ using AgentOffice.Office;
 var builder = WebApplication.CreateBuilder(args);
 
 // API keys and the Telegram bot token live in user secrets, which ASP.NET Core only loads in Development.
-// This app is usually started with a plain `dotnet run` (no launch profile, so Production): load them anyway.
+// Offices run under their own environment name (Personal, Work…), so load them in every environment.
 if (!builder.Environment.IsDevelopment()) builder.Configuration.AddUserSecrets<Program>(optional: true);
+
+// Several offices on one machine share one secrets store; settings under a section named after the environment
+// apply to that office only, e.g. dotnet user-secrets set "Work:Telegram:BotToken" "…".
+var instance = builder.Configuration.GetSection(builder.Environment.EnvironmentName).AsEnumerable(makePathsRelative: true)
+    .Where(kv => kv.Value is not null).ToDictionary(kv => kv.Key, kv => kv.Value);
+builder.Configuration.AddInMemoryCollection(instance);
+// Keep the usual precedence: environment variables and command-line arguments still win over secrets.
+builder.Configuration.AddEnvironmentVariables().AddCommandLine(args);
 
 builder.Services.Configure<OfficeOptions>(builder.Configuration.GetSection(OfficeOptions.Section));
 builder.Services.Configure<ProviderOptions>(builder.Configuration.GetSection(ProviderOptions.Section));

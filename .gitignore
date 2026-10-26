@@ -5,3 +5,6 @@ obj/
 *.user
 src/AgentOffice/office-data/
 .DS_Store
+src/AgentOffice/office-data-*/
+src/AgentOffice/appsettings.*.json
+!src/AgentOffice/appsettings.Example.json

@@ -60,6 +60,17 @@ public sealed class ProviderOptions
     {
         /// <summary>Executable name or full path of the <c>claude</c> CLI.</summary>
         public string Command { get; set; } = "claude";
+        /// <summary>
+        /// Claude Code config folder (CLAUDE_CONFIG_DIR) for this office, which picks the account it logs in with,
+        /// e.g. ~/.claude-work. Empty = whatever the app's environment says.
+        /// </summary>
+        public string? ConfigDir { get; set; }
+        /// <summary>
+        /// Long-lived token from <c>claude setup-token</c>. When set, the CLI signs in with it instead of the account
+        /// logged in on this machine, and keeps its own config folder in the office's data folder (unless ConfigDir
+        /// says otherwise). Keep it out of git: appsettings.&lt;Office&gt;.json files are ignored, or use user secrets.
+        /// </summary>
+        public string? OAuthToken { get; set; }
         public string Model { get; set; } = "sonnet";
         public List<string> Models { get; set; } = [];
     }

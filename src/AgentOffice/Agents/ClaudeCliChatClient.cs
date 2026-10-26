@@ -17,7 +17,7 @@ namespace AgentOffice.Agents;
 /// informational function contents so the office can animate them without invoking anything twice.
 /// The CLI session id is returned as the conversation id, so follow-up turns resume the same session.
 /// </summary>
-public sealed class ClaudeCliChatClient(string command, string model, ClaudeCliToolHost toolHost) : IChatClient
+public sealed class ClaudeCliChatClient(string command, string model, ClaudeCliToolHost toolHost, string? configDir = null, string? oauthToken = null) : IChatClient
 {
     private const string ToolPrefix = $"mcp__{ClaudeCliToolHost.ServerName}__";
 
@@ -82,6 +82,9 @@ public sealed class ClaudeCliChatClient(string command, string model, ClaudeCliT
         psi.Environment.Remove("CLAUDE_CODE_ENTRYPOINT");
         // ask_colleague runs a whole colleague turn; don't let the CLI give up on it.
         psi.Environment["MCP_TOOL_TIMEOUT"] = "3600000";
+        // Which Claude account this office uses: its own token if it has one, else the login in the config folder.
+        if (configDir is not null) psi.Environment["CLAUDE_CONFIG_DIR"] = configDir;
+        if (oauthToken is not null) psi.Environment["CLAUDE_CODE_OAUTH_TOKEN"] = oauthToken;
 
         Process process;
         try { process = Process.Start(psi) ?? throw new InvalidOperationException("Couldn't start the Claude CLI."); }
